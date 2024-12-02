@@ -129,7 +129,7 @@ public class ObjReader {
 	}
 
 	// Метод для парсинга вершин
-	public static Vector3f parseVertex(final ArrayList<String> wordsInLineWithoutToken, int lineInd) {
+	protected static Vector3f parseVertex(final ArrayList<String> wordsInLineWithoutToken, int lineInd) {
 		try {
 			// Проверка на слишком много аргументов
 			if (wordsInLineWithoutToken.size() > 3) {
@@ -150,7 +150,7 @@ public class ObjReader {
 	}
 
 	// Метод для парсинга текстурных вершин
-	public static Vector2f parseTextureVertex(final ArrayList<String> wordsInLineWithoutToken, int lineInd) {
+	protected static Vector2f parseTextureVertex(final ArrayList<String> wordsInLineWithoutToken, int lineInd) {
 		try {
 			// Проверка на слишком много аргументов
 			if (wordsInLineWithoutToken.size() > 2) {
@@ -169,7 +169,7 @@ public class ObjReader {
 	}
 
 	// Метод для парсинга нормалей
-	public static Vector3f parseNormal(final ArrayList<String> wordsInLineWithoutToken, int lineInd) {
+	protected static Vector3f parseNormal(final ArrayList<String> wordsInLineWithoutToken, int lineInd) {
 		try {
 			// Проверка на слишком много аргументов
 			if (wordsInLineWithoutToken.size() > 3) {
@@ -214,7 +214,7 @@ public class ObjReader {
 	}
 
 	// Метод для парсинга отдельных слов в строках полигонов
-	public static void parseFaceWord(
+	protected static void parseFaceWord(
 			String wordInLine,
 			ArrayList<Integer> onePolygonVertexIndices,
 			ArrayList<Integer> onePolygonTextureVertexIndices,
@@ -251,7 +251,7 @@ public class ObjReader {
 	}
 
 	// Метод для поиска строки в файле OBJ по токену и индексу
-	public static int findLineInObj(Scanner scanner, String token, Integer indexInPolygon){
+	protected static int findLineInObj(Scanner scanner, String token, Integer indexInPolygon){
 		int lineInd = 0;
 		int rows = 1;
 		while (scanner.hasNextLine()) {
@@ -277,7 +277,7 @@ public class ObjReader {
 	}
 
 	// Метод для проверки на дублирование индексов вершин в полигоне
-	public static boolean findEqualites(ArrayList<Integer> onePolygonVertexIndices) {
+	protected static boolean findEqualites(ArrayList<Integer> onePolygonVertexIndices) {
 		for (int i = 0; i < onePolygonVertexIndices.size() - 1; i++) {
 			for (int j = i + 1; j < onePolygonVertexIndices.size(); j++) {
 				if (onePolygonVertexIndices.get(i) == onePolygonVertexIndices.get(j)) return true;
