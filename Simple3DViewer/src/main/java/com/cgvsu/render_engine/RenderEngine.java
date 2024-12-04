@@ -36,11 +36,11 @@ public class RenderEngine {
             for (int vertexInPolygonInd = 0; vertexInPolygonInd < nVerticesInPolygon; ++vertexInPolygonInd) {
                 Vector3f vertex = mesh.vertices.get(mesh.polygons.get(polygonInd).getVertexIndices().get(vertexInPolygonInd));
 
-                // Преобразование Vector3f в Vector4f для работы с гомогенными координатами
+                // преобразование Vector3f в Vector4f для работы с гомогенными координатами
                 Vector4f vertex4f = new Vector4f(vertex.getX(), vertex.getY(), vertex.getZ(), 1.0f);
                 Vector4f transformedVertex = modelViewProjectionMatrix.multiply(vertex4f);
 
-                // Преобразование обратно в Vector3f для дальнейшей обработки
+                // преобразование обратно в Vector3f для дальнейшей обработки
                 Vector3f transformedVertex3f = new Vector3f(transformedVertex.getX(), transformedVertex.getY(), transformedVertex.getZ());
                 Vector2f vector2f = Vector3f.vertex3fToVector2f(transformedVertex3f, width, height);
                 Point2f resultPoint = new Point2f(vector2f.getX(), vector2f.getY());
