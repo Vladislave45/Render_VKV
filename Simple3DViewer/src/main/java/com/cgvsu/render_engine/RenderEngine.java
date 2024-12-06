@@ -6,7 +6,6 @@ import com.cgvsu.model.Polygon;
 import com.cgvsu.math.Vector4f;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.PixelWriter;
-import javafx.scene.paint.Color;
 import com.cgvsu.model.Model;
 import com.cgvsu.math.Vector3f;
 import com.cgvsu.math.matrix.Matrix4f;
