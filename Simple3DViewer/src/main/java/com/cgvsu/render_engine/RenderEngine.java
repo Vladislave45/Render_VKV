@@ -34,7 +34,7 @@ public class RenderEngine {
 // ModelRasterizer.rasterizeModel(graphicsContext, mesh.triangulatedCopy, modelViewProjectionMatrix, width, height, Color.BISQUE, buffer);
 // ModelMeshDrawer.drawMesh(graphicsContext, mesh, modelViewProjectionMatrix, width, height, buffer);
         if (isActive) {
-            graphicsContext.setStroke(new Color(0, 0.67, 0.71, 1));
+            graphicsContext.setStroke(new Color(0, 0, 0.71, 1));
         } else {
             graphicsContext.setStroke(Color.BLACK);
         }
