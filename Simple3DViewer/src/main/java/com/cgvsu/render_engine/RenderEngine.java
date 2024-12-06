@@ -20,8 +20,7 @@ public class RenderEngine {
             final Camera camera,
             final Model mesh,
             final int width,
-            final int height,
-            final boolean isActive
+            final int height
     ) {
 
         Matrix4f modelMatrix = rotateScaleTranslate();
@@ -33,11 +32,6 @@ public class RenderEngine {
 
 // ModelRasterizer.rasterizeModel(graphicsContext, mesh.triangulatedCopy, modelViewProjectionMatrix, width, height, Color.BISQUE, buffer);
 // ModelMeshDrawer.drawMesh(graphicsContext, mesh, modelViewProjectionMatrix, width, height, buffer);
-        if (isActive) {
-            graphicsContext.setStroke(new Color(0, 0, 0.71, 1)); // цвет, который будет отвечать за выбор
-        } else {
-            graphicsContext.setStroke(Color.BLACK);
-        }
 
         final int nPolygons = mesh.polygons.size();
         for (int polygonInd = 0; polygonInd < nPolygons; ++polygonInd) {
