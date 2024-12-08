@@ -92,7 +92,7 @@ public class GuiController {
             // сброс трансформаций
             mesh.resetTransformations();
 
-            System.out.println("Model loaded and transformations reset.");
+            System.out.println("Загружена модель и сброшены преобразования.");
             // todo: обработка ошибок
         } catch (IOException exception) {
             // обработка ошибок
@@ -102,7 +102,7 @@ public class GuiController {
     @FXML
     private void onSaveOriginalModelMenuItemClick() {
         if (mesh == null) {
-            System.out.println("No model loaded to save.");
+            System.out.println("Модель не загружена для сохранения.");
             return;
         }
 
@@ -121,7 +121,7 @@ public class GuiController {
             // сохранение исходной модели
             String originalModelContent = ObjWriter.write(mesh, false);
             Files.writeString(fileName, originalModelContent);
-            System.out.println("Original model saved to: " + fileName);
+            System.out.println("Исходная модель сохранена в: " + fileName);
         } catch (IOException exception) {
             // Обработка ошибок
         }
@@ -130,13 +130,13 @@ public class GuiController {
     @FXML
     private void onSaveTransformedModelMenuItemClick() {
         if (mesh == null) {
-            System.out.println("No model loaded to save.");
+            System.out.println("Модель не загружена для сохранения.");
             return;
         }
 
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Model (*.obj)", "*.obj"));
-        fileChooser.setTitle("Save Transformed Model");
+        fileChooser.setTitle("Сохранение преобразованной модели");
 
         File file = fileChooser.showSaveDialog((Stage) canvas.getScene().getWindow());
         if (file == null) {
@@ -149,7 +149,7 @@ public class GuiController {
             // сохранение трансформированной модели
             String transformedModelContent = ObjWriter.write(mesh);
             Files.writeString(fileName, transformedModelContent);
-            System.out.println("Transformed model saved to: " + fileName);
+            System.out.println("Трансформированная модель сохранена: " + fileName);
         } catch (IOException exception) {
             // Обработка ошибок
         }
