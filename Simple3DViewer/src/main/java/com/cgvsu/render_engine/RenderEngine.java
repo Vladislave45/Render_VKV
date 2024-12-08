@@ -1,11 +1,8 @@
 package com.cgvsu.render_engine;
 
 import java.util.ArrayList;
-import com.cgvsu.math.Vector2f;
-import com.cgvsu.model.Polygon;
 import com.cgvsu.math.Vector4f;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.image.PixelWriter;
 import com.cgvsu.model.Model;
 import com.cgvsu.math.Vector3f;
 import com.cgvsu.math.matrix.Matrix4f;
@@ -21,16 +18,15 @@ public class RenderEngine {
             final int width,
             final int height
     ) {
-
-        Matrix4f modelMatrix = rotateScaleTranslate();
+        Matrix4f modelMatrix = rotateScaleTranslate(
+                mesh.getScale().getX(), mesh.getScale().getY(), mesh.getScale().getZ(),
+                mesh.getRotation().getX(), mesh.getRotation().getY(), mesh.getRotation().getZ(),
+                mesh.getTranslation().getX(), mesh.getTranslation().getY(), mesh.getTranslation().getZ()
+        );
         Matrix4f viewMatrix = camera.getViewMatrix();
         Matrix4f projectionMatrix = camera.getProjectionMatrix();
 
         Matrix4f modelViewProjectionMatrix = Matrix4f.multiply(projectionMatrix, Matrix4f.multiply(viewMatrix, modelMatrix));
-
-
-// ModelRasterizer.rasterizeModel(graphicsContext, mesh.triangulatedCopy, modelViewProjectionMatrix, width, height, Color.BISQUE, buffer);
-// ModelMeshDrawer.drawMesh(graphicsContext, mesh, modelViewProjectionMatrix, width, height, buffer);
 
         final int nPolygons = mesh.polygons.size();
         for (int polygonInd = 0; polygonInd < nPolygons; ++polygonInd) {
