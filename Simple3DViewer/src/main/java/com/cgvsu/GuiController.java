@@ -136,7 +136,7 @@ public class GuiController {
 
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Model (*.obj)", "*.obj"));
-        fileChooser.setTitle("Сохранение преобразованной модели");
+        fileChooser.setTitle("Save Transformed Model");
 
         File file = fileChooser.showSaveDialog((Stage) canvas.getScene().getWindow());
         if (file == null) {
