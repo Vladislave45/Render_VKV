@@ -7,7 +7,6 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import javafx.stage.FileChooser;
@@ -66,10 +65,6 @@ public class GuiController {
 
         timeline.getKeyFrames().add(frame);
         timeline.play();
-
-        //  мышь
-        canvas.setOnMousePressed(this::handleMousePressed);
-        canvas.setOnMouseDragged(this::handleMouseDragged);
     }
 
     @FXML
@@ -93,7 +88,7 @@ public class GuiController {
             mesh.resetTransformations();
 
             System.out.println("Загружена модель и сброшены преобразования.");
-            // todo: обработка ошибок
+            //
         } catch (IOException exception) {
             // обработка ошибок
         }
@@ -156,32 +151,42 @@ public class GuiController {
     }
 
     @FXML
-    public void handleCameraForward(ActionEvent actionEvent) {
-        camera.movePosition(new Vector3f(0, 0, -TRANSLATION));
+    public void handleCameraForward(ActionEvent actionEvent) { // W
+        camera.movePositionAndTarget(new Vector3f(0, 0, -TRANSLATION));
     }
 
     @FXML
-    public void handleCameraBackward(ActionEvent actionEvent) {
-        camera.movePosition(new Vector3f(0, 0, TRANSLATION));
+    public void handleCameraBackward(ActionEvent actionEvent) { // S
+        camera.movePositionAndTarget(new Vector3f(0, 0, TRANSLATION));
     }
 
     @FXML
-    public void handleCameraLeft(ActionEvent actionEvent) {
-        camera.movePosition(new Vector3f(TRANSLATION, 0, 0));
+    public void handleCameraLeft(ActionEvent actionEvent) { // A
+        camera.movePositionAndTarget(new Vector3f(TRANSLATION, 0, 0));
     }
 
     @FXML
-    public void handleCameraRight(ActionEvent actionEvent) {
+    public void handleCameraRight(ActionEvent actionEvent) { // D
+        camera.movePositionAndTarget(new Vector3f(-TRANSLATION, 0, 0));
+    }
+
+    @FXML
+    public void handleCameraLeftO(ActionEvent actionEvent) { // <-
         camera.movePosition(new Vector3f(-TRANSLATION, 0, 0));
     }
 
     @FXML
-    public void handleCameraUp(ActionEvent actionEvent) {
+    public void handleCameraRightO(ActionEvent actionEvent) { // ->
+        camera.movePosition(new Vector3f(TRANSLATION, 0, 0));
+    }
+
+    @FXML
+    public void handleCameraUp(ActionEvent actionEvent) { // стрелка вверх
         camera.movePosition(new Vector3f(0, TRANSLATION, 0));
     }
 
     @FXML
-    public void handleCameraDown(ActionEvent actionEvent) {
+    public void handleCameraDown(ActionEvent actionEvent) { // стрелка вниз
         camera.movePosition(new Vector3f(0, -TRANSLATION, 0));
     }
 
@@ -328,37 +333,4 @@ public class GuiController {
             mesh.setTranslation(new Vector3f(translation.getX(), translation.getY(), translation.getZ() - TRANSLATION));
         }
     }
-
-    private void handleMousePressed(MouseEvent event) {
-        // сохранение начальных координат мыши
-        lastMouseX = event.getX();
-        lastMouseY = event.getY();
-    }
-
-    private void handleMouseDragged(MouseEvent event) {
-        if (mesh != null) {
-            double deltaX = event.getX() - lastMouseX;
-            double deltaY = event.getY() - lastMouseY;
-
-            if (event.isPrimaryButtonDown()) {
-                // вращение
-                Vector3f rotation = mesh.getRotation();
-                mesh.setRotation(new Vector3f(rotation.getX() - (float) (deltaY * 0.5), rotation.getY() - (float) (deltaX * 0.5), rotation.getZ()));
-            } else if (event.isMiddleButtonDown()) {
-                // масштабирование
-                Vector3f scale = mesh.getScale();
-                mesh.setScale(new Vector3f(scale.getX() + (float) (deltaY * 0.01), scale.getY() + (float) (deltaY * 0.01), scale.getZ() + (float) (deltaY * 0.01)));
-            } else if (event.isSecondaryButtonDown()) {
-                // перемещение
-                Vector3f translation = mesh.getTranslation();
-                mesh.setTranslation(new Vector3f(translation.getX() - (float) (deltaX * 0.1), translation.getY() - (float) (deltaY * 0.1), translation.getZ()));
-            }
-
-            lastMouseX = event.getX();
-            lastMouseY = event.getY();
-        }
-    }
-
-    private double lastMouseX = 0;
-    private double lastMouseY = 0;
 }

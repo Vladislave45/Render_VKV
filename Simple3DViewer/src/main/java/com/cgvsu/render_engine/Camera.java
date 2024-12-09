@@ -47,6 +47,10 @@ public class Camera {
     public void moveTarget(final Vector3f translation) {
         this.target.add(translation);
     }
+    public void movePositionAndTarget(final Vector3f translation) {
+        this.position.add(translation);
+        this.target.add(translation);
+    }
 
     Matrix4f getViewMatrix() {
         return GraphicConveyor.lookAt(position, target);
