@@ -66,6 +66,7 @@ public class GuiController {
         timeline.getKeyFrames().add(frame);
         timeline.play();
     }
+// для камеры, управление мышь
 
     @FXML
     private void onOpenModelMenuItemClick() {
