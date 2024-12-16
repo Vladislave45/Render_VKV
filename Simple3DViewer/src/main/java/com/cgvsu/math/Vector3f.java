@@ -48,6 +48,18 @@ public class Vector3f {
         throw new IllegalArgumentException("Недопустимо, индекс выходит за пределы допустимого");
     }
 
+    public void setX(float x) {
+        this.x = x;
+    }
+
+    public void setY(float y) {
+        this.y = y;
+    }
+
+    public void setZ(float z) {
+        this.z = z;
+    }
+
     public void add(Vector3f other){
         this.x += other.x;
         this.y += other.y;
@@ -57,7 +69,7 @@ public class Vector3f {
     public static Vector3f add(Vector3f first, Vector3f second) {
         return new Vector3f(
                 first.x + second.x,
-                first.y + second.x,
+                first.y + second.y,
                 first.z + second.z
         );
     }
@@ -98,7 +110,7 @@ public class Vector3f {
                 this.z/scalar
         );
     }
-    //вычисление дллины
+    //вычисление длины
     public float length(){
         return (float) Math.sqrt(x*x + y*y + z*z);
     }

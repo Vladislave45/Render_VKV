@@ -18,15 +18,15 @@ public class RenderEngine {
             final int width,
             final int height
     ) {
-       // Matrix4f modelMatrix = rotateScaleTranslate(
-        //        mesh.getScale().getX(), mesh.getScale().getY(), mesh.getScale().getZ(),
-          //      mesh.getRotation().getX(), mesh.getRotation().getY(), mesh.getRotation().getZ(),
-            //    mesh.getTranslation().getX(), mesh.getTranslation().getY(), mesh.getTranslation().getZ()
-        //);
-        //Matrix4f viewMatrix = camera.getViewMatrix();
-        //Matrix4f projectionMatrix = camera.getProjectionMatrix();
+        Matrix4f modelMatrix = rotateScaleTranslate(
+                mesh.getScale().getX(), mesh.getScale().getY(), mesh.getScale().getZ(),
+                mesh.getRotation().getX(), mesh.getRotation().getY(), mesh.getRotation().getZ(),
+                mesh.getTranslation().getX(), mesh.getTranslation().getY(), mesh.getTranslation().getZ()
+        );
+        Matrix4f viewMatrix = camera.getViewMatrix();
+        Matrix4f projectionMatrix = camera.getProjectionMatrix();
 
-        //Matrix4f modelViewProjectionMatrix = Matrix4f.multiply(projectionMatrix, Matrix4f.multiply(viewMatrix, modelMatrix));
+        Matrix4f modelViewProjectionMatrix = Matrix4f.multiply(projectionMatrix, Matrix4f.multiply(viewMatrix, modelMatrix));
 
         final int nPolygons = mesh.polygons.size();
         for (int polygonInd = 0; polygonInd < nPolygons; ++polygonInd) {
@@ -38,8 +38,8 @@ public class RenderEngine {
 
                 Vector4f vertexVecmath = new Vector4f(vertex.getX(), vertex.getY(), vertex.getZ(), 1);
 
-               // Point2f resultPoint = vertexToPoint(Matrix4f.multiply(modelViewProjectionMatrix, vertexVecmath).normalizeTo3f(), width, height);
-                //resultPoints.add(resultPoint);
+                Point2f resultPoint = vertexToPoint(Matrix4f.multiply(modelViewProjectionMatrix, vertexVecmath).normalizeTo3f(), width, height);
+                resultPoints.add(resultPoint);
             }
 
             for (int vertexInPolygonInd = 1; vertexInPolygonInd < nVerticesInPolygon; ++vertexInPolygonInd) {
