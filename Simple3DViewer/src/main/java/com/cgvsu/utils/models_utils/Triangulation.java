@@ -10,6 +10,7 @@ import java.util.*;
 
 public class Triangulation {
 
+    //Для Model Controller и тестов
     public static TriPolyModel getTriangulatedModel(Model model) {
         assert !model.polygons.isEmpty() : "Empty model";
         TriPolyModel triangulatedPolygonsModel = new TriPolyModel();
