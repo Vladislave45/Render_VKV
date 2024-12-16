@@ -183,34 +183,25 @@ public class GuiController {
 
     // Управление камерой
     @FXML
-    public void handleCameraForward(ActionEvent actionEvent) {
+    public void handleCameraForward(ActionEvent actionEvent) { // W
         camera.movePositionAndTarget(new Vector3f(0, 0, -TRANSLATION));
     }
 
     @FXML
-    public void handleCameraBackward(ActionEvent actionEvent) {
+    public void handleCameraBackward(ActionEvent actionEvent) { // S
         camera.movePositionAndTarget(new Vector3f(0, 0, TRANSLATION));
     }
 
     @FXML
-    public void handleCameraLeft(ActionEvent actionEvent) {
+    public void handleCameraLeft(ActionEvent actionEvent) { // A
         camera.movePositionAndTarget(new Vector3f(TRANSLATION, 0, 0));
     }
 
     @FXML
-    public void handleCameraRight(ActionEvent actionEvent) {
+    public void handleCameraRight(ActionEvent actionEvent) { // D
         camera.movePositionAndTarget(new Vector3f(-TRANSLATION, 0, 0));
     }
 
-    @FXML
-    public void handleCameraUp(ActionEvent actionEvent) {
-        camera.movePosition(new Vector3f(0, TRANSLATION, 0));
-    }
-
-    @FXML
-    public void handleCameraDown(ActionEvent actionEvent) {
-        camera.movePosition(new Vector3f(0, -TRANSLATION, 0));
-    }
 
     // Трансформации модели
     @FXML

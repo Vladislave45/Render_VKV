@@ -49,9 +49,4 @@ public class Model {
         this.name = name;
     }
 
-    public void resetTransformations() {
-        setScale(new Vector3f(1, 1, 1));
-        setRotation(new Vector3f(0, 0, 0));
-        setTranslation(new Vector3f(0, 0, 0));
-    }
 }
