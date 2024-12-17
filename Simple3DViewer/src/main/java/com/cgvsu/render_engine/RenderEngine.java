@@ -12,6 +12,7 @@ import javafx.scene.paint.Color;
 
 import java.util.ArrayList;
 
+
 public class RenderEngine {
 
     public static void render(
@@ -20,7 +21,7 @@ public class RenderEngine {
             final Model mesh,
             final int width,
             final int height,
-            final boolean isRasterizationEnabled // Флаг для включения/выключения растеризации
+            final boolean isRasterizationEnabled// Флаг для включения/выключения растеризации
     ) {
         // Создаём Z-буфер
         ArrayList<ArrayList<Float>> zBuffer = ZBuffer.createZBuffer(width, height);
@@ -42,6 +43,7 @@ public class RenderEngine {
 
             ArrayList<Vector2f> resultPoints = new ArrayList<>();
             ArrayList<Vector3f> vertices3D = new ArrayList<>();
+            ArrayList<Vector2f> textureCoords = new ArrayList<>();
 
             for (int vertexInPolygonInd = 0; vertexInPolygonInd < nVerticesInPolygon; ++vertexInPolygonInd) {
                 Vector3f vertex = mesh.vertices.get(mesh.polygons.get(polygonInd).getVertexIndices().get(vertexInPolygonInd));
@@ -52,6 +54,9 @@ public class RenderEngine {
 
                 Vector2f resultPoint = GraphicConveyor.vertexToVector2f(transformedVertex, width, height);
                 resultPoints.add(resultPoint);
+
+                Vector2f texCoord = mesh.textureVertices.get(mesh.polygons.get(polygonInd).getTextureVertexIndices().get(vertexInPolygonInd));
+                textureCoords.add(texCoord);
             }
 
             // Растеризация треугольников

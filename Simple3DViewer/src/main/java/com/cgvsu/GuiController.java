@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import javafx.scene.image.Image;
 
 public class GuiController {
 
@@ -42,7 +43,6 @@ public class GuiController {
 
     @FXML
     private ListView<String> modelListView; // Список моделей
-
     private ArrayList<Model> models = new ArrayList<>(); // Список моделей
     private int activeModelIndex = -1; // Индекс активной модели
 
@@ -455,17 +455,18 @@ public class GuiController {
     // Новые методы для управления триангуляцией и растеризацией
 
     private boolean isTriangulationApplied = false; // Флаг для проверки, была ли уже применена триангуляция
-
+    private Model originalModel; // Переменная для хранения оригинальной модели
     @FXML
     private void handleTriangulate(ActionEvent event) {
-        if (!isTriangulationApplied) { // Проверяем, была ли уже применена триангуляция
+        if (!isTriangulationApplied) {
             isTriangulationEnabled = true;
             System.out.println("Триангуляция включена");
             if (activeModelIndex != -1) {
                 Model activeModel = models.get(activeModelIndex);
-                models.set(activeModelIndex, Triangulation.getTriangulatedModel(activeModel)); // Вызываем триангуляцию только один раз
-                isTriangulationApplied = true; // Устанавливаем флаг
-                timeline.playFromStart(); // Перерисовываем сцену
+                originalModel = activeModel; // Сохраняем оригинальную модель
+                models.set(activeModelIndex, Triangulation.getTriangulatedModel(activeModel));
+                isTriangulationApplied = true;
+                timeline.playFromStart();
             }
         } else {
             System.out.println("Триангуляция уже была применена");
@@ -475,10 +476,9 @@ public class GuiController {
     @FXML
     private void handleDisableTriangulate(ActionEvent event) {
         isTriangulationEnabled = false;
-        isTriangulationApplied = false; // Сбрасываем флаг
+        isTriangulationApplied = false;
         System.out.println("Триангуляция отключена");
         if (activeModelIndex != -1) {
-            Model activeModel = models.get(activeModelIndex);
             models.set(activeModelIndex, loadOriginalModel()); // Возвращаем оригинальную модель
             timeline.playFromStart(); // Перерисовываем сцену
         }
@@ -499,7 +499,21 @@ public class GuiController {
     }
 
     private Model loadOriginalModel() {
-        // Возвращаем сохранённую оригинальную модель
-        return models.get(activeModelIndex);
+// Возвращаем сохранённую оригинальную модель
+        return originalModel;
+    }
+
+    private Image texture;
+    @FXML
+    private void onLoadTextureMenuItemClick() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg"));
+        fileChooser.setTitle("Загрузить тектсуру");
+
+        File file = fileChooser.showOpenDialog((anchorPane.getScene().getWindow()));
+        if (file != null) {
+            texture = new Image(file.toURI().toString());
+            System.out.println("Загруженная текстура: " + file.getName());
+        }
     }
 }
