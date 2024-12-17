@@ -83,7 +83,7 @@ public class GuiController {
 
             // Рендеринг всех моделей
             for (Model model : models) {
-                RenderEngine.render(canvas.getGraphicsContext2D(), camera, model, (int) width, (int) height, isRasterizationEnabled);
+                RenderEngine.render(canvas.getGraphicsContext2D(), camera, model, (int) width, (int) height, isRasterizationEnabled, texture);
             }
         });
 
@@ -508,7 +508,7 @@ public class GuiController {
     private void onLoadTextureMenuItemClick() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg"));
-        fileChooser.setTitle("Загрузить тектсуру");
+        fileChooser.setTitle("Загрузить текстуру");
 
         File file = fileChooser.showOpenDialog((anchorPane.getScene().getWindow()));
         if (file != null) {

@@ -8,6 +8,7 @@ import com.cgvsu.math.matrix.Matrix4f;
 import com.cgvsu.utils.ZBuffer;
 import com.cgvsu.utils.triangles_utils.TriangleRasterization;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 
 import java.util.ArrayList;
@@ -21,7 +22,8 @@ public class RenderEngine {
             final Model mesh,
             final int width,
             final int height,
-            final boolean isRasterizationEnabled// Флаг для включения/выключения растеризации
+            final boolean isRasterizationEnabled,
+            final Image texture
     ) {
         // Создаём Z-буфер
         ArrayList<ArrayList<Float>> zBuffer = ZBuffer.createZBuffer(width, height);
@@ -43,7 +45,7 @@ public class RenderEngine {
 
             ArrayList<Vector2f> resultPoints = new ArrayList<>();
             ArrayList<Vector3f> vertices3D = new ArrayList<>();
-            ArrayList<Vector2f> textureCoords = new ArrayList<>();
+            ArrayList<Vector2f> textureCoords = new ArrayList<>(); // Текстурные координаты
 
             for (int vertexInPolygonInd = 0; vertexInPolygonInd < nVerticesInPolygon; ++vertexInPolygonInd) {
                 Vector3f vertex = mesh.vertices.get(mesh.polygons.get(polygonInd).getVertexIndices().get(vertexInPolygonInd));
@@ -55,6 +57,7 @@ public class RenderEngine {
                 Vector2f resultPoint = GraphicConveyor.vertexToVector2f(transformedVertex, width, height);
                 resultPoints.add(resultPoint);
 
+                // Добавляем текстурные координаты
                 Vector2f texCoord = mesh.textureVertices.get(mesh.polygons.get(polygonInd).getTextureVertexIndices().get(vertexInPolygonInd));
                 textureCoords.add(texCoord);
             }
@@ -70,8 +73,12 @@ public class RenderEngine {
                     Vector3f v2_3d = vertices3D.get(i + 1);
                     Vector3f v3_3d = vertices3D.get(i + 2);
 
+                    Vector2f t1 = textureCoords.get(0);
+                    Vector2f t2 = textureCoords.get(i + 1);
+                    Vector2f t3 = textureCoords.get(i + 2);
+
                     // Используем Z-буфер для управления видимостью
-                    rasterizeTriangle(graphicsContext, v1, v2, v3, v1_3d, v2_3d, v3_3d, zBuffer, width, height, Color.BLUE);
+                    rasterizeTriangle(graphicsContext, v1, v2, v3, v1_3d, v2_3d, v3_3d, zBuffer, width, height, texture, t1, t2, t3);
                 }
             } else {
                 // Если растеризация выключена, отрисовываем только линии
@@ -101,7 +108,8 @@ public class RenderEngine {
             Vector3f v1_3d, Vector3f v2_3d, Vector3f v3_3d,
             ArrayList<ArrayList<Float>> zBuffer,
             int width, int height,
-            Color color
+            Image texture, // Добавляем текстуру
+            Vector2f t1, Vector2f t2, Vector2f t3 // Текстурные координаты
     ) {
         // Преобразуем точки в 2D
         ArrayList<Vector2f> triangle2D = new ArrayList<>();
@@ -110,6 +118,6 @@ public class RenderEngine {
         triangle2D.add(v3);
 
         // Вызываем растеризацию треугольника
-        TriangleRasterization.drawTriangle(gc, triangle2D, color, color, color, zBuffer, v1_3d, v2_3d, v3_3d);
+        TriangleRasterization.drawTriangle(gc, triangle2D, texture, t1, t2, t3, zBuffer, v1_3d, v2_3d, v3_3d);
     }
 }
