@@ -1,34 +1,25 @@
 package com.cgvsu.utils;
 
-import com.cgvsu.math.Vector3f;
-import com.cgvsu.model.TriPolyModel;
-import com.cgvsu.model.Triangle;
-
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicReferenceArray;
 
 public class ZBuffer {
 
-    //Будет использоваться в RenderEngine, чтобы подготовить буфер для хранения глубин пикселей
-    public static ArrayList<ArrayList<Float>> getDefaultPixelDepthMatrix(int width, int height) {
-        ArrayList<ArrayList<Float>> buffer = new ArrayList<>();
-
-        for (int i = 0; i < width; i++) {
-            ArrayList<Float> fl = new ArrayList<>();
-            for (int j = 0; j < height; j++) {
-                fl.add(Float.MAX_VALUE);
+    public static ArrayList<ArrayList<Float>> createZBuffer(int width, int height) {
+        ArrayList<ArrayList<Float>> zBuffer = new ArrayList<>();
+        for (int x = 0; x < width; x++) {
+            ArrayList<Float> column = new ArrayList<>();
+            for (int y = 0; y < height; y++) {
+                column.add(Float.MAX_VALUE); // Изначально глубина максимальна
             }
-            buffer.add(fl);
+            zBuffer.add(column);
         }
-        return buffer;
+        return zBuffer;
     }
 
-    //Проверка видимости пикселей полигонов
-    public static boolean testBuffer(int x, int y, float depth, ArrayList<ArrayList<Float>> buffer) {
-        if (x >= 0 && x < buffer.size() && y >= 0 && y < buffer.get(0).size()) {
-            if (depth < buffer.get(x).get(y)) {
-                buffer.get(x).set(y, depth);
+    public static boolean testBuffer(int x, int y, float depth, ArrayList<ArrayList<Float>> zBuffer) {
+        if (x >= 0 && x < zBuffer.size() && y >= 0 && y < zBuffer.get(0).size()) {
+            if (depth < zBuffer.get(x).get(y)) {
+                zBuffer.get(x).set(y, depth); // Обновляем глубину, если текущая меньше
                 return true;
             }
         }

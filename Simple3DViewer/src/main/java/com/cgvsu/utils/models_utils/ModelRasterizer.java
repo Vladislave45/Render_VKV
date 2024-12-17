@@ -32,7 +32,6 @@ public class ModelRasterizer {
 
         // Color[][] frameBuffer = FrameBuffer.getDefaultPixelColorBuffer(width, height);
         Map<Vector2f, Float> depthMap = new HashMap<>();
-        // if (!model.isTriangulated) model = (TriPolyModel) ModelConverter.triPolyModelToModel(Triangulation.getTriangulatedModel(model));
         for (Polygon polygon: model.polygons
         ) {
             ArrayList<Vector3f> vertices = new ArrayList<>();

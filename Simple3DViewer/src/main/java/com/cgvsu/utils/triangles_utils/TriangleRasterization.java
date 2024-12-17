@@ -1,141 +1,111 @@
 package com.cgvsu.utils.triangles_utils;
 
 import com.cgvsu.math.Vector2f;
+import com.cgvsu.math.Vector3f;
+import com.cgvsu.utils.ZBuffer;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 
 public class TriangleRasterization {
 
-    private static final Comparator<Vector2f> COMPARATOR = (a, b) -> {
-        int cmp = Float.compare(a.getY(), b.getY());
-        if (cmp != 0) {
-            return cmp;
-        } else return Float.compare(a.getX(), b.getX());
-    };
-
-    private static final Vector2f p = new Vector2f();
-
-    public static void drawTriangle(GraphicsContext gc, ArrayList<Vector2f> triangle, Color color1, Color color2, Color color3) {
-        drawTri(gc, triangle.get(0), triangle.get(1), triangle.get(2), color1, color2, color3);
-    }
-
-    public static void drawTri(
-            final GraphicsContext gc,
-            final Vector2f v1,
-            final Vector2f v2,
-            final Vector2f v3,
-            final Color c1,
-            final Color c2,
-            final Color c3
+    public static void drawTriangle(
+            GraphicsContext gc,
+            ArrayList<Vector2f> triangle,
+            Color color1, Color color2, Color color3,
+            ArrayList<ArrayList<Float>> zBuffer,
+            Vector3f v1_3d, Vector3f v2_3d, Vector3f v3_3d
     ) {
-        // Сортировка вершин по Y
-        final Vector2f[] verts = new Vector2f[]{v1, v2, v3};
-        Arrays.sort(verts, COMPARATOR);
-        final int x1 = (int) verts[0].getX();
-        final int x2 = (int) verts[1].getX();
-        final int x3 = (int) verts[2].getX();
-        final int y1 = (int) verts[0].getY();
-        final int y2 = (int) verts[1].getY();
-        final int y3 = (int) verts[2].getY();
+        Vector2f v1 = triangle.get(0);
+        Vector2f v2 = triangle.get(1);
+        Vector2f v3 = triangle.get(2);
 
-        // Удваивание площади треугольника. Используется для последующего вычисления барицентрических координат
-        final float area = Math.abs(v1.to(v2).crossMagnitude(v1.to(v3)));
-        drawTopTriangle(gc, c1, c2, c3, x1, y1, x2, y2, x3, y3, area);
-        drawBottomTriangle(gc, c1, c2, c3, x1, y1, x2, y2, x3, y3, area);
-    }
+        // Сортируем вершины по Y
+        if (v1.getY() > v2.getY()) {
+            Vector2f temp = v1;
+            v1 = v2;
+            v2 = temp;
 
-    private static void drawTopTriangle(
-            final GraphicsContext gc,
-            final Color c1,
-            final Color c2,
-            final Color c3,
-            final int x1, final int y1,
-            final int x2, final int y2,
-            final int x3, final int y3,
-            final float area
-    ) {
-        final int x2x1 = x2 - x1;
-        final int x3x1 = x3 - x1;
-        final int y2y1 = y2 - y1;
-        final int y3y1 = y3 - y1;
-
-        for (int y = y1; y < y2; y++) {
-            // Не нужно проверять, равны ли делители 0, потому что цикл не будет выполняться, если y1 == y2
-            int l = x2x1 * (y - y1) / y2y1 + x1; // Ребро 1-2
-            int r = x3x1 * (y - y1) / y3y1 + x1; // Ребро 1-3
-            if (l > r) { // Смена
-                int tmp = l;
-                l = r;
-                r = tmp;
-            }
-            for (int x = l; x <= r; x++) {
-                // Интерполяция
-                Color interpolatedColor = interpolateColor(x, y, new Vector2f(x1, y1), c1, new Vector2f(x2, y2), c2, new Vector2f(x3, y3), c3, area);
-                gc.setStroke(interpolatedColor);
-                gc.strokeRect(x, y, 1, 1);
-            }
+            Vector3f temp3d = v1_3d;
+            v1_3d = v2_3d;
+            v2_3d = temp3d;
         }
-    }
-    private static void drawBottomTriangle(
-            final GraphicsContext gc,
-            final Color c1,
-            final Color c2,
-            final Color c3,
-            final int x1, final int y1,
-            final int x2, final int y2,
-            final int x3, final int y3,
-            final float area
-    ) {
-        final int x3x2 = x3 - x2;
-        final int x3x1 = x3 - x1;
-        final int y3y2 = y3 - y2;
-        final int y3y1 = y3 - y1;
+        if (v2.getY() > v3.getY()) {
+            Vector2f temp = v2;
+            v2 = v3;
+            v3 = temp;
 
-        // Рисуем разделительную линию и нижний треугольник
-        if (y3y2 == 0 || y3y1 == 0) return; // Stop now if the bottom triangle is degenerate (avoids div by zero).
-        for (int y = y2; y <= y3; y++) {
-            int l = x3x2 * (y - y2) / y3y2 + x2; // Edge 2-3.
-            int r = x3x1 * (y - y1) / y3y1 + x1; // Edge 1-3.
-            if (l > r) {
-                int tmp = l;
-                l = r;
-                r = tmp;
-            }
-            for (int x = l; x <= r; x++) {
-                // Интерполяция
-                Color interpolatedColor = interpolateColor(x, y, new Vector2f(x1, y1), c1, new Vector2f(x2, y2), c2, new Vector2f(x3, y3), c3, area);
-                gc.setStroke(interpolatedColor);
-                gc.strokeRect(x, y, 1, 1);
+            Vector3f temp3d = v2_3d;
+            v2_3d = v3_3d;
+            v3_3d = temp3d;
+        }
+        if (v1.getY() > v2.getY()) {
+            Vector2f temp = v1;
+            v1 = v2;
+            v2 = temp;
+
+            Vector3f temp3d = v1_3d;
+            v1_3d = v2_3d;
+            v2_3d = temp3d;
+        }
+
+        // Растеризация треугольника
+        rasterizeTriangle(gc, v1, v2, v3, v1_3d, v2_3d, v3_3d, color1, zBuffer);
+    }
+
+    private static void rasterizeTriangle(
+            GraphicsContext gc,
+            Vector2f v1, Vector2f v2, Vector2f v3,
+            Vector3f v1_3d, Vector3f v2_3d, Vector3f v3_3d,
+            Color color,
+            ArrayList<ArrayList<Float>> zBuffer
+    ) {
+        // Алгоритм растеризации треугольника с учётом Z-буфера
+        int minX = (int) Math.min(v1.getX(), Math.min(v2.getX(), v3.getX()));
+        int maxX = (int) Math.max(v1.getX(), Math.max(v2.getX(), v3.getX()));
+        int minY = (int) Math.min(v1.getY(), Math.min(v2.getY(), v3.getY()));
+        int maxY = (int) Math.max(v1.getY(), Math.max(v2.getY(), v3.getY()));
+
+        for (int y = minY; y <= maxY; y++) {
+            for (int x = minX; x <= maxX; x++) {
+                if (isPointInTriangle(x, y, v1, v2, v3)) {
+                    float depth = interpolateDepth(x, y, v1, v2, v3, v1_3d, v2_3d, v3_3d);
+
+                    // Проверяем Z-буфер
+                    if (ZBuffer.testBuffer(x, y, depth, zBuffer)) {
+                        gc.getPixelWriter().setColor(x, y, color);
+                    }
+                }
             }
         }
     }
 
-    private static Color interpolateColor(
-            final int x, final int y,
-            final Vector2f v1, final Color c1,
-            final Vector2f v2, final Color c2,
-            final Vector2f v3, final Color c3,
-            final float area
-    ) {
-        p.set(x, y);
-        final float w1 = Math.abs(v2.to(p).crossMagnitude(v2.to(v3))) / area;
-        final float w2 = Math.abs(v1.to(p).crossMagnitude(v1.to(v3))) / area;
-        final float w3 = Math.abs(v1.to(p).crossMagnitude(v1.to(v2))) / area;
+    private static boolean isPointInTriangle(int x, int y, Vector2f v1, Vector2f v2, Vector2f v3) {
+        float d1 = sign(x, y, v1, v2);
+        float d2 = sign(x, y, v2, v3);
+        float d3 = sign(x, y, v3, v1);
 
-        final float red = clamp((float) (w1 * c1.getRed() + w2 * c2.getRed() + w3 * c3.getRed()));
-        final float green = clamp((float) (w1 * c1.getGreen() + w2 * c2.getGreen() + w3 * c3.getGreen()));
-        final float blue = clamp((float) (w1 * c1.getBlue() + w2 * c2.getBlue() + w3 * c3.getBlue()));
+        boolean hasNeg = (d1 < 0) || (d2 < 0) || (d3 < 0);
+        boolean hasPos = (d1 > 0) || (d2 > 0) || (d3 > 0);
 
-        return new Color(red, green, blue, 1.0);
+        return !(hasNeg && hasPos);
     }
 
-    private static float clamp(float v) {
-        if (v < 0.0f) return 0.0f;
-        if (v > 1.0f) return 1.0f;
-        return v;
+    private static float sign(int x, int y, Vector2f v1, Vector2f v2) {
+        return (x - v2.getX()) * (v1.getY() - v2.getY()) - (v1.getX() - v2.getX()) * (y - v2.getY());
+    }
+
+    private static float interpolateDepth(int x, int y, Vector2f v1, Vector2f v2, Vector2f v3, Vector3f v1_3d, Vector3f v2_3d, Vector3f v3_3d) {
+        float w1 = ((v2.getY() - v3.getY()) * (x - v3.getX()) + (v3.getX() - v2.getX()) * (y - v3.getY())) /
+                ((v2.getY() - v3.getY()) * (v1.getX() - v3.getX()) + (v3.getX() - v2.getX()) * (v1.getY() - v3.getY()));
+        float w2 = ((v3.getY() - v1.getY()) * (x - v3.getX()) + (v1.getX() - v3.getX()) * (y - v3.getY())) /
+                ((v2.getY() - v3.getY()) * (v1.getX() - v3.getX()) + (v3.getX() - v2.getX()) * (v1.getY() - v3.getY()));
+        float w3 = 1 - w1 - w2;
+
+        return w1 * v1_3d.getZ() + w2 * v2_3d.getZ() + w3 * v3_3d.getZ();
+    }
+
+    public static void drawTriangle(GraphicsContext gc, ArrayList<Vector2f> points, Color red, Color green, Color blue) {
     }
 }
