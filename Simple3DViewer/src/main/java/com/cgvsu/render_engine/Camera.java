@@ -80,14 +80,7 @@ public class Camera {
         direction.setY(newY);
         direction.setZ(newZ2);
 
-// Вращение вокруг оси Z (roll)?????????????????
-        float rollRad = (float) Math.toRadians(roll);
-        float cosRoll = (float) Math.cos(rollRad);
-        float sinRoll = (float) Math.sin(rollRad);
-        float newX2 = direction.getX() * cosRoll - direction.getY() * sinRoll;
-        float newY2 = direction.getX() * sinRoll + direction.getY() * cosRoll;
-        direction.setX(newX2);
-        direction.setY(newY2);
+
 
 // Обновляем позицию камеры
         position = target.deduct(target, direction);

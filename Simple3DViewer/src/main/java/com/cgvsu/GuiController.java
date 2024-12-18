@@ -120,10 +120,10 @@ public class GuiController {
         float sensitivity = 0.1f; // Чувствительность мыши
         float yaw = (float) (-deltaX * sensitivity); // Инвертируем направление вращения по горизонтали
         float pitch = (float) (-deltaY * sensitivity);
-        float roll = (float) (deltaY * sensitivity);
+
 
 // Обновляем углы вращения камеры
-        camera.rotateAroundTarget(yaw, pitch, roll);
+        camera.rotateAroundTarget(yaw, pitch);
     }
     ////////////// конец мышь
 
