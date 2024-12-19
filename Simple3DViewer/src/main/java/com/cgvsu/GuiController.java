@@ -120,10 +120,9 @@ public class GuiController {
         float sensitivity = 0.1f; // Чувствительность мыши
         float yaw = (float) (-deltaX * sensitivity); // Инвертируем направление вращения по горизонтали
         float pitch = (float) (-deltaY * sensitivity);
-        float roll = (float) (deltaY * sensitivity);
 
 // Обновляем углы вращения камеры
-        camera.rotateAroundTarget(yaw, pitch, roll);
+        camera.rotateAroundTarget(yaw, pitch);
     }
     ////////////// конец мышь
 
@@ -231,12 +230,12 @@ public class GuiController {
     // Управление камерой
     @FXML
     public void handleCameraForward(ActionEvent actionEvent) { // W
-        camera.movePositionAndTarget(new Vector3f(0, 0, -TRANSLATION));
+        camera.movePosition(new Vector3f(0, 0, -TRANSLATION));
     }
 
     @FXML
     public void handleCameraBackward(ActionEvent actionEvent) { // S
-        camera.movePositionAndTarget(new Vector3f(0, 0, TRANSLATION));
+        camera.movePosition(new Vector3f(0, 0, TRANSLATION));
     }
 
     @FXML
