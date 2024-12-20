@@ -14,6 +14,7 @@ import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.ListView;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
@@ -86,11 +87,11 @@ public class GuiController {
         timeline.getKeyFrames().add(frame);
         timeline.play();
 
-        ///// мышь
+        //  мышь
         canvas.setOnMousePressed(event -> handleMousePressed(event));
         canvas.setOnMouseDragged(event -> handleMouseDragged(event));
         canvas.setOnMouseReleased(event -> handleMouseReleased(event));
-        ////////
+        canvas.setOnScroll(event -> handleMouseScrolled(event)); // колесо
     }
 
     /////////мышь
@@ -123,6 +124,15 @@ public class GuiController {
 
 // Обновляем углы вращения камеры
         camera.rotateAroundTarget(yaw, pitch);
+    }
+    @FXML
+    private void handleMouseScrolled(ScrollEvent event) {
+        double deltaY = event.getDeltaY();
+        if (deltaY > 0) {
+            camera.movePosition(new Vector3f(0, 0, -TRANSLATION));
+        } else {
+            camera.movePosition(new Vector3f(0, 0, TRANSLATION));
+        }
     }
     ////////////// конец мышь
 
