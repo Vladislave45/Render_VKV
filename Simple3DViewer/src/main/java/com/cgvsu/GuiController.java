@@ -1,10 +1,14 @@
 package com.cgvsu;
 
 import com.cgvsu.math.Vector3f;
+import com.cgvsu.math.Vector4f;
+import com.cgvsu.math.matrix.Matrix4f;
 import com.cgvsu.model.Model;
+import com.cgvsu.model.Polygon;
 import com.cgvsu.objreader.ObjReader;
 import com.cgvsu.objwriter.ObjWriter;
 import com.cgvsu.render_engine.Camera;
+import com.cgvsu.render_engine.GraphicConveyor;
 import com.cgvsu.render_engine.RenderEngine;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
@@ -12,18 +16,23 @@ import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
 
+import javax.vecmath.Point2f;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.List;
 
 public class GuiController {
 
@@ -40,6 +49,9 @@ public class GuiController {
     @FXML
     private ListView<String> modelListView; // Список моделей
 
+    @FXML
+    private Button removeVerticesButton; // Кнопка для удаления вершин
+
     private ArrayList<Model> models = new ArrayList<>(); // Список моделей
     private int activeModelIndex = -1; // Индекс активной модели
 
@@ -49,6 +61,9 @@ public class GuiController {
             1.0F, 1, 0.01F, 100);
 
     private Timeline timeline;
+
+    // Переменные для выделения вершин
+    private List<Integer> selectedVertices = new ArrayList<>();
 
     //////
     private double lastMouseX = 0;
@@ -80,18 +95,30 @@ public class GuiController {
 
             // Рендеринг всех моделей
             for (Model model : models) {
-                RenderEngine.render(canvas.getGraphicsContext2D(), camera, model, (int) width, (int) height);
+                RenderEngine.render(canvas.getGraphicsContext2D(), camera, model, (int) width, (int) height, selectedVertices);
             }
         });
 
         timeline.getKeyFrames().add(frame);
         timeline.play();
 
-        //  мышь
+        // Обработка событий мыши
         canvas.setOnMousePressed(event -> handleMousePressed(event));
         canvas.setOnMouseDragged(event -> handleMouseDragged(event));
         canvas.setOnMouseReleased(event -> handleMouseReleased(event));
         canvas.setOnScroll(event -> handleMouseScrolled(event)); // колесо
+
+        // Обработка событий клавиатуры
+        canvas.setOnKeyPressed(event -> handleKeyPressed(event));
+        canvas.setOnKeyReleased(event -> handleKeyReleased(event));
+    }
+
+    // Обработка отпускания клавиши
+    private void handleKeyReleased(KeyEvent event) {
+        if (event.getCode() == KeyCode.SHIFT) {
+            // Если отпущена клавиша SHIFT, сохраняем выделенные вершины
+            // (ничего не делаем, так как выделение уже сохранено)
+        }
     }
 
     /////////мышь
@@ -99,6 +126,45 @@ public class GuiController {
         lastMouseX = event.getSceneX();
         lastMouseY = event.getSceneY();
         isMousePressed = true;
+
+        // Проверяем, нажата ли клавиша SHIFT
+        boolean isShiftPressed = event.isShiftDown();
+
+        // Получаем координаты клика мыши
+        double mouseX = event.getX();
+        double mouseY = event.getY();
+
+        // Вычисляем modelViewProjectionMatrix
+        Matrix4f modelMatrix = GraphicConveyor.rotateScaleTranslate(
+                models.get(activeModelIndex).getScale().getX(),
+                models.get(activeModelIndex).getScale().getY(),
+                models.get(activeModelIndex).getScale().getZ(),
+                models.get(activeModelIndex).getRotation().getX(),
+                models.get(activeModelIndex).getRotation().getY(),
+                models.get(activeModelIndex).getRotation().getZ(),
+                models.get(activeModelIndex).getTranslation().getX(),
+                models.get(activeModelIndex).getTranslation().getY(),
+                models.get(activeModelIndex).getTranslation().getZ()
+        );
+        Matrix4f viewMatrix = camera.getViewMatrix();
+        Matrix4f projectionMatrix = camera.getProjectionMatrix();
+        Matrix4f modelViewProjectionMatrix = Matrix4f.multiply(projectionMatrix, Matrix4f.multiply(viewMatrix, modelMatrix));
+
+        // Находим ближайшую вершину к клику мыши
+        int closestVertexIndex = findClosestVertex(mouseX, mouseY, modelViewProjectionMatrix);
+
+        if (closestVertexIndex != -1) {
+            if (!isShiftPressed) {
+                // Если SHIFT не нажата, выбираем только одну вершину
+                selectedVertices.clear(); // Очищаем список выбранных вершин
+                selectedVertices.add(closestVertexIndex);
+            } else {
+                // Если SHIFT нажата, добавляем вершину в список выбранных
+                if (!selectedVertices.contains(closestVertexIndex)) {
+                    selectedVertices.add(closestVertexIndex);
+                }
+            }
+        }
     }
 
     private void handleMouseDragged(MouseEvent event) {
@@ -106,7 +172,7 @@ public class GuiController {
             double deltaX = event.getSceneX() - lastMouseX;
             double deltaY = event.getSceneY() - lastMouseY;
 
-// Обновляем вращение камеры в зависимости от движения мыши
+            // Обновляем вращение камеры в зависимости от движения мыши
             updateCameraRotation(deltaX, deltaY);
 
             lastMouseX = event.getSceneX();
@@ -117,14 +183,16 @@ public class GuiController {
     private void handleMouseReleased(MouseEvent event) {
         isMousePressed = false;
     }
+
     private void updateCameraRotation(double deltaX, double deltaY) {
         float sensitivity = 0.1f; // Чувствительность мыши
         float yaw = (float) (-deltaX * sensitivity); // Инвертируем направление вращения по горизонтали
         float pitch = (float) (-deltaY * sensitivity);
 
-// Обновляем углы вращения камеры
+        // Обновляем углы вращения камеры
         camera.rotateAroundTarget(yaw, pitch);
     }
+
     @FXML
     private void handleMouseScrolled(ScrollEvent event) {
         double deltaY = event.getDeltaY();
@@ -134,7 +202,50 @@ public class GuiController {
             camera.movePosition(new Vector3f(0, 0, TRANSLATION));
         }
     }
-    ////////////// конец мышь
+
+    // Метод для поиска ближайшей вершины к клику мыши
+    private int findClosestVertex(double mouseX, double mouseY, Matrix4f modelViewProjectionMatrix) {
+        if (activeModelIndex == -1) return -1;
+
+        Model activeModel = models.get(activeModelIndex);
+        double minDistance = Double.MAX_VALUE;
+        int closestVertexIndex = -1;
+
+        for (int i = 0; i < activeModel.vertices.size(); i++) {
+            Vector3f vertex = activeModel.vertices.get(i);
+
+            // Преобразуем вершину в экранные координаты
+            Vector4f vertexVecmath = new Vector4f(vertex.getX(), vertex.getY(), vertex.getZ(), 1);
+            Point2f screenPoint = GraphicConveyor.vertexToPoint(
+                    Matrix4f.multiply(modelViewProjectionMatrix, vertexVecmath).normalizeTo3f(),
+                    (int) canvas.getWidth(),
+                    (int) canvas.getHeight()
+            );
+
+            // Вычисляем расстояние до точки мыши
+            double distance = Math.sqrt(Math.pow(screenPoint.x - mouseX, 2) + Math.pow(screenPoint.y - mouseY, 2));
+
+            // Если расстояние меньше минимального, обновляем ближайшую вершину
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestVertexIndex = i;
+            }
+        }
+
+        return closestVertexIndex;
+    }
+
+    // Обработка нажатия клавиш
+    private void handleKeyPressed(KeyEvent event) {
+        if (event.getCode() == KeyCode.DELETE) {
+            // Удаление выбранных вершин
+            if (activeModelIndex != -1) {
+                Model activeModel = models.get(activeModelIndex);
+                activeModel.removeVertices(selectedVertices);
+                selectedVertices.clear(); // Очищаем список выбранных вершин
+            }
+        }
+    }
 
     // Установка активной модели
     private void setActiveModel(int index) {
@@ -257,7 +368,6 @@ public class GuiController {
     public void handleCameraRight(ActionEvent actionEvent) { // D
         camera.movePositionAndTarget(new Vector3f(-TRANSLATION, 0, 0));
     }
-
 
     // Трансформации модели
     @FXML
@@ -455,6 +565,17 @@ public class GuiController {
             activeModel.setTranslation(new Vector3f(translation.getX(), translation.getY(), translation.getZ() - TRANSLATION));
         } else {
             System.out.println("Нет активной модели для трансформации");
+        }
+    }
+
+    @FXML
+    private void handleRemoveVerticesButtonClick(ActionEvent event) {
+        if (activeModelIndex != -1) {
+            Model activeModel = models.get(activeModelIndex);
+            for (int vertexIndex : selectedVertices) {
+                activeModel.removeVertexAndUpdatePolygons(vertexIndex);
+            }
+            selectedVertices.clear();
         }
     }
 }

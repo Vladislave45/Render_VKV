@@ -4,6 +4,9 @@ import com.cgvsu.math.Vector2f;
 import com.cgvsu.math.Vector3f;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Model {
     public ArrayList<Vector3f> vertices = new ArrayList<>();
@@ -47,6 +50,45 @@ public class Model {
 
     public void setName(String name) {
         this.name = name;
+    }
+    public void removeVertices(List<Integer> vertexIndices) {
+        // Удаляем вершины в обратном порядке, чтобы индексы не сбивались
+        for (int i = vertexIndices.size() - 1; i >= 0; i--) {
+            int vertexIndex = vertexIndices.get(i);
+            removeVertexAndUpdatePolygons(vertexIndex);
+        }
+    }
+    public void removeVertexAndUpdatePolygons(int vertexIndexToRemove) {
+        if (vertexIndexToRemove < 0 || vertexIndexToRemove >= vertices.size()) {
+            throw new IllegalArgumentException("Invalid vertex index to remove");
+        }
+        vertices.remove(vertexIndexToRemove);
+        updatePolygonIndicesAfterVertexRemoval(vertexIndexToRemove);
+    }
+
+    private void updatePolygonIndicesAfterVertexRemoval(int removedVertexIndex) {
+        // Перебираем все полигоны
+        for (Polygon polygon : polygons) {
+            List<Integer> updatedVertexIndices = new ArrayList<>();
+
+            // Перебираем индексы вершин в текущем полигоне
+            for (int vertexIndex : polygon.getVertexIndices()) {
+                if (vertexIndex < removedVertexIndex) {
+                    // Если индекс меньше удаленного, он остается без изменений
+                    updatedVertexIndices.add(vertexIndex);
+                } else if (vertexIndex > removedVertexIndex) {
+                    // Если индекс больше удаленного, уменьшаем его на 1
+                    updatedVertexIndices.add(vertexIndex - 1);
+                }
+                // Если индекс равен удаленному, он пропускается
+            }
+
+            // Устанавливаем обновленные индексы в полигон
+            polygon.setVertexIndices(updatedVertexIndices);
+        }
+
+        // Удаляем полигоны, которые стали невалидными (например, содержат менее 3 вершин)
+        polygons.removeIf(polygon -> polygon.getVertexIndices().size() < 3);
     }
 
 }

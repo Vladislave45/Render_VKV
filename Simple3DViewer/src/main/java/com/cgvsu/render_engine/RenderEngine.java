@@ -1,6 +1,8 @@
 package com.cgvsu.render_engine;
 
 import java.util.ArrayList;
+import java.util.List;
+
 import com.cgvsu.math.Vector4f;
 import javafx.scene.canvas.GraphicsContext;
 import com.cgvsu.model.Model;
@@ -16,7 +18,8 @@ public class RenderEngine {
             final Camera camera,
             final Model mesh,
             final int width,
-            final int height
+            final int height,
+            final List<Integer> selectedVertices // Список выбранных вершин
     ) {
         Matrix4f modelMatrix = rotateScaleTranslate(
                 mesh.getScale().getX(), mesh.getScale().getY(), mesh.getScale().getZ(),
@@ -42,6 +45,7 @@ public class RenderEngine {
                 resultPoints.add(resultPoint);
             }
 
+            // Рисуем полигон
             for (int vertexInPolygonInd = 1; vertexInPolygonInd < nVerticesInPolygon; ++vertexInPolygonInd) {
                 graphicsContext.strokeLine(
                         resultPoints.get(vertexInPolygonInd - 1).x,
@@ -56,6 +60,32 @@ public class RenderEngine {
                         resultPoints.get(nVerticesInPolygon - 1).y,
                         resultPoints.get(0).x,
                         resultPoints.get(0).y);
+        }
+
+        // Выделение вершин цветом
+        if (!selectedVertices.isEmpty()) {
+            highlightSelectedVertices(graphicsContext, mesh, modelViewProjectionMatrix, width, height, selectedVertices);
+        }    }
+
+    // Метод для выделения вершин цветом
+    private static void highlightSelectedVertices(
+            GraphicsContext gc,
+            Model mesh,
+            Matrix4f modelViewProjectionMatrix,
+            int width,
+            int height,
+            List<Integer> selectedVertices
+    ) {
+
+        gc.setLineWidth(1);
+
+        for (int vertexIndex : selectedVertices) {
+            Vector3f vertex = mesh.vertices.get(vertexIndex);
+            Vector4f vertexVecmath = new Vector4f(vertex.getX(), vertex.getY(), vertex.getZ(), 1);
+            Point2f screenPoint = vertexToPoint(Matrix4f.multiply(modelViewProjectionMatrix, vertexVecmath).normalizeTo3f(), width, height);
+
+            // Рисуем круг вокруг выделенной вершины
+            gc.strokeOval(screenPoint.x - 5, screenPoint.y - 5, 10, 10);
         }
     }
 }

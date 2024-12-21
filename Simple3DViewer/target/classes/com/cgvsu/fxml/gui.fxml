@@ -8,6 +8,7 @@
 <?import javafx.scene.canvas.Canvas?>
 <?import javafx.scene.control.ListView?>
 
+<?import javafx.scene.control.Button?>
 <AnchorPane fx:id="anchorPane" xmlns:fx="http://javafx.com/fxml" fx:controller="com.cgvsu.GuiController">
     <MenuBar>
         <Menu mnemonicParsing="false" text="File">
@@ -147,9 +148,9 @@
             </MenuItem>
         </Menu>
     </MenuBar>
-
     <Canvas fx:id="canvas" width="1600" height="870" AnchorPane.topAnchor="30.0"/>
-
+    <Button fx:id="removeVerticesButton" onAction="#handleRemoveVerticesButtonClick" text="Remove Vertices" AnchorPane.leftAnchor="220" AnchorPane.topAnchor="0" />
     <!-- Список моделей -->
     <ListView fx:id="modelListView" prefHeight="200" prefWidth="200" AnchorPane.leftAnchor="10" AnchorPane.topAnchor="60" />
+
 </AnchorPane>
