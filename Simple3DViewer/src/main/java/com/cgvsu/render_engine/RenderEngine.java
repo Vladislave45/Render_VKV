@@ -8,6 +8,8 @@ import javafx.scene.canvas.GraphicsContext;
 import com.cgvsu.model.Model;
 import com.cgvsu.math.Vector3f;
 import com.cgvsu.math.matrix.Matrix4f;
+import javafx.scene.paint.Color;
+
 import javax.vecmath.Point2f;
 import static com.cgvsu.render_engine.GraphicConveyor.*;
 
@@ -19,16 +21,21 @@ public class RenderEngine {
             final Model mesh,
             final int width,
             final int height,
-            final List<Integer> selectedVertices // Список выбранных вершин
+            final List<Integer> selectedVertices,
+            final Color modelColor,
+            final Color backgroundColor
     ) {
-        Matrix4f modelMatrix = rotateScaleTranslate(
+        graphicsContext.setStroke(modelColor);
+        graphicsContext.setFill(backgroundColor);
+        graphicsContext.fillRect(0, 0, width, height);
+
+        Matrix4f modelMatrix = GraphicConveyor.rotateScaleTranslate(
                 mesh.getScale().getX(), mesh.getScale().getY(), mesh.getScale().getZ(),
                 mesh.getRotation().getX(), mesh.getRotation().getY(), mesh.getRotation().getZ(),
                 mesh.getTranslation().getX(), mesh.getTranslation().getY(), mesh.getTranslation().getZ()
         );
         Matrix4f viewMatrix = camera.getViewMatrix();
         Matrix4f projectionMatrix = camera.getProjectionMatrix();
-
         Matrix4f modelViewProjectionMatrix = Matrix4f.multiply(projectionMatrix, Matrix4f.multiply(viewMatrix, modelMatrix));
 
         final int nPolygons = mesh.polygons.size();
@@ -41,11 +48,10 @@ public class RenderEngine {
 
                 Vector4f vertexVecmath = new Vector4f(vertex.getX(), vertex.getY(), vertex.getZ(), 1);
 
-                Point2f resultPoint = vertexToPoint(Matrix4f.multiply(modelViewProjectionMatrix, vertexVecmath).normalizeTo3f(), width, height);
+                Point2f resultPoint = GraphicConveyor.vertexToPoint(Matrix4f.multiply(modelViewProjectionMatrix, vertexVecmath).normalizeTo3f(), width, height);
                 resultPoints.add(resultPoint);
             }
 
-            // Рисуем полигон
             for (int vertexInPolygonInd = 1; vertexInPolygonInd < nVerticesInPolygon; ++vertexInPolygonInd) {
                 graphicsContext.strokeLine(
                         resultPoints.get(vertexInPolygonInd - 1).x,
@@ -62,11 +68,10 @@ public class RenderEngine {
                         resultPoints.get(0).y);
         }
 
-        // Выделение вершин цветом
         if (!selectedVertices.isEmpty()) {
             highlightSelectedVertices(graphicsContext, mesh, modelViewProjectionMatrix, width, height, selectedVertices);
-        }    }
-
+        }
+    }
     // Метод для выделения вершин цветом
     private static void highlightSelectedVertices(
             GraphicsContext gc,

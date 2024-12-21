@@ -17,12 +17,16 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Button;
+import javafx.scene.control.ColorPicker;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
 
@@ -73,6 +77,25 @@ public class GuiController {
 
     @FXML
     private void initialize() {
+
+        // Инициализация цветов и тем
+        modelColorPicker.setValue(Color.BLACK);
+        backgroundColorPicker.setValue(Color.WHITE);
+
+        // Инициализация текстовых полей
+        scaleXField.setText("1.0");
+        scaleYField.setText("1.0");
+        scaleZField.setText("1.0");
+
+        rotateXField.setText("0.0");
+        rotateYField.setText("0.0");
+        rotateZField.setText("0.0");
+
+        translateXField.setText("0.0");
+        translateYField.setText("0.0");
+        translateZField.setText("0.0");
+        modelColorPicker.setValue(Color.BLACK);
+        backgroundColorPicker.setValue(Color.WHITE);
         // Привязка размеров холста к размерам панели
         anchorPane.prefWidthProperty().addListener((ov, oldValue, newValue) -> canvas.setWidth(newValue.doubleValue()));
         anchorPane.prefHeightProperty().addListener((ov, oldValue, newValue) -> canvas.setHeight(newValue.doubleValue()));
@@ -93,15 +116,27 @@ public class GuiController {
             canvas.getGraphicsContext2D().clearRect(0, 0, width, height);
             camera.setAspectRatio((float) (width / height));
 
+            // Передача цветов и параметров трансформации
+            Color modelColor = modelColorPicker.getValue();
+            Color backgroundColor = backgroundColorPicker.getValue();
+
             // Рендеринг всех моделей
             for (Model model : models) {
-                RenderEngine.render(canvas.getGraphicsContext2D(), camera, model, (int) width, (int) height, selectedVertices);
+                RenderEngine.render(
+                        canvas.getGraphicsContext2D(),
+                        camera,
+                        model,
+                        (int) width,
+                        (int) height,
+                        selectedVertices,
+                        modelColor,
+                        backgroundColor
+                );
             }
         });
 
         timeline.getKeyFrames().add(frame);
         timeline.play();
-
         // Обработка событий мыши
         canvas.setOnMousePressed(event -> handleMousePressed(event));
         canvas.setOnMouseDragged(event -> handleMouseDragged(event));
@@ -576,6 +611,92 @@ public class GuiController {
                 activeModel.removeVertexAndUpdatePolygons(vertexIndex);
             }
             selectedVertices.clear();
+        }
+    }
+
+    @FXML
+    private VBox settingsPanel;
+
+    @FXML
+    private ColorPicker modelColorPicker;
+
+    @FXML
+    private ColorPicker backgroundColorPicker;
+
+    @FXML
+    private TextField scaleXField, scaleYField, scaleZField;
+
+    @FXML
+    private TextField rotateXField, rotateYField, rotateZField;
+
+    @FXML
+    private TextField translateXField, translateYField, translateZField;
+
+    // Метод для переключения видимости панели настроек
+    @FXML
+    private void toggleSettingsPanel() {
+        settingsPanel.setVisible(!settingsPanel.isVisible());
+    }
+
+    // Метод для изменения цвета линий модели
+    @FXML
+    private void handleModelColorChange(ActionEvent event) {
+        Color color = modelColorPicker.getValue();
+        canvas.getGraphicsContext2D().setStroke(color);
+    }
+
+    // Метод для изменения цвета фона
+    @FXML
+    private void handleBackgroundColorChange(ActionEvent event) {
+        Color color = backgroundColorPicker.getValue();
+        canvas.getGraphicsContext2D().setFill(color);
+        canvas.getGraphicsContext2D().fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+    }
+
+    // Метод для переключения на светлую тему
+    @FXML
+    private void handleLightTheme(ActionEvent event) {
+        modelColorPicker.setValue(Color.BLACK);
+        backgroundColorPicker.setValue(Color.WHITE);
+    }
+
+    // Метод для переключения на тёмную тему
+    @FXML
+    private void handleDarkTheme(ActionEvent event) {
+        modelColorPicker.setValue(Color.WHITE);
+        backgroundColorPicker.setValue(Color.BLACK);
+    }
+
+    // Метод для применения трансформаций
+    @FXML
+    private void handleApplyTransformations(ActionEvent event) {
+        if (activeModelIndex == -1) return;
+
+        Model activeModel = models.get(activeModelIndex);
+
+        try {
+            // Парсинг значений из текстовых полей
+            float scaleX = Float.parseFloat(scaleXField.getText());
+            float scaleY = Float.parseFloat(scaleYField.getText());
+            float scaleZ = Float.parseFloat(scaleZField.getText());
+
+            float rotateX = Float.parseFloat(rotateXField.getText());
+            float rotateY = Float.parseFloat(rotateYField.getText());
+            float rotateZ = Float.parseFloat(rotateZField.getText());
+
+            float translateX = Float.parseFloat(translateXField.getText());
+            float translateY = Float.parseFloat(translateYField.getText());
+            float translateZ = Float.parseFloat(translateZField.getText());
+
+            // Применение трансформаций к модели
+            activeModel.setScale(new Vector3f(scaleX, scaleY, scaleZ));
+            activeModel.setRotation(new Vector3f(rotateX, rotateY, rotateZ));
+            activeModel.setTranslation(new Vector3f(translateX, translateY, translateZ));
+
+            // Обновление рендеринга
+            timeline.playFromStart();
+        } catch (NumberFormatException e) {
+            System.out.println("Ошибка: введите корректные числа для трансформации.");
         }
     }
 }

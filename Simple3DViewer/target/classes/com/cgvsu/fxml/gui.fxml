@@ -9,6 +9,11 @@
 <?import javafx.scene.control.ListView?>
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.ColorPicker?>
+<?import javafx.scene.control.TextField?>
 <AnchorPane fx:id="anchorPane" xmlns:fx="http://javafx.com/fxml" fx:controller="com.cgvsu.GuiController">
     <MenuBar>
         <Menu mnemonicParsing="false" text="File">
@@ -148,9 +153,69 @@
             </MenuItem>
         </Menu>
     </MenuBar>
+    <Button text="Settings" onAction="#toggleSettingsPanel" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0" />
     <Canvas fx:id="canvas" width="1600" height="870" AnchorPane.topAnchor="30.0"/>
+    <VBox fx:id="settingsPanel" visible="false" prefWidth="250" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="30" >
+
+        <Label text="Color" />
+        <HBox>
+            <Label text="Line model:" />
+            <ColorPicker fx:id="modelColorPicker" onAction="#handleModelColorChange" />
+        </HBox>
+        <HBox>
+            <Label text="Background:" />
+            <ColorPicker fx:id="backgroundColorPicker" onAction="#handleBackgroundColorChange" />
+        </HBox>
+
+
+        <Label text="Ithems" />
+        <HBox>
+            <Button text="Light" onAction="#handleLightTheme" />
+            <Button text="Black" onAction="#handleDarkTheme" />
+        </HBox>
+
+
+        <Label text="Transform model" />
+        <HBox>
+            <Label text="Масштаб X:" />
+            <TextField fx:id="scaleXField" prefWidth="50" />
+        </HBox>
+        <HBox>
+            <Label text="Масштаб Y:" />
+            <TextField fx:id="scaleYField" prefWidth="50" />
+        </HBox>
+        <HBox>
+            <Label text="Масштаб Z:" />
+            <TextField fx:id="scaleZField" prefWidth="50" />
+        </HBox>
+        <HBox>
+            <Label text="Поворот X:" />
+            <TextField fx:id="rotateXField" prefWidth="50" />
+        </HBox>
+        <HBox>
+            <Label text="Поворот Y:" />
+            <TextField fx:id="rotateYField" prefWidth="50" />
+        </HBox>
+        <HBox>
+            <Label text="Поворот Z:" />
+            <TextField fx:id="rotateZField" prefWidth="50" />
+        </HBox>
+        <HBox>
+            <Label text="Перемещение X:" />
+            <TextField fx:id="translateXField" prefWidth="50" />
+        </HBox>
+        <HBox>
+            <Label text="Перемещение Y:" />
+            <TextField fx:id="translateYField" prefWidth="50" />
+        </HBox>
+        <HBox>
+            <Label text="Перемещение Z:" />
+            <TextField fx:id="translateZField" prefWidth="50" />
+        </HBox>
+        <Button text="Save" onAction="#handleApplyTransformations" />
+    </VBox>
     <Button fx:id="removeVerticesButton" onAction="#handleRemoveVerticesButtonClick" text="Remove Vertices" AnchorPane.leftAnchor="220" AnchorPane.topAnchor="0" />
-    <!-- Список моделей -->
+    
     <ListView fx:id="modelListView" prefHeight="200" prefWidth="200" AnchorPane.leftAnchor="10" AnchorPane.topAnchor="60" />
 
 </AnchorPane>
