@@ -40,9 +40,9 @@ import java.util.List;
 
 public class GuiController {
 
-    final private float TRANSLATION = 0.5F;
-    final private float SCALE = 0.1F;
-    final private float ROTATION = 10F;
+    private float TRANSLATION = 0.5F;
+    private float SCALE = 0.1F;
+    private float ROTATION = 10F;
 
     @FXML
     AnchorPane anchorPane;
@@ -58,6 +58,13 @@ public class GuiController {
 
     private ArrayList<Model> models = new ArrayList<>(); // Список моделей
     private int activeModelIndex = -1; // Индекс активной модели
+
+    @FXML
+    private TextField translationStepField;
+    @FXML
+    private TextField scaleStepField;
+    @FXML
+    private TextField rotationStepField;
 
     private Camera camera = new Camera(
             new Vector3f(0, 0, 100),
@@ -405,6 +412,36 @@ public class GuiController {
     }
 
     // Трансформации модели
+
+    @FXML
+    public void applyScale(ActionEvent event) {
+        try {
+            SCALE = Float.parseFloat(scaleStepField.getText());
+            System.out.println("Scale обновлен: " + SCALE);
+        } catch (NumberFormatException e) {
+            System.out.println("Ошибка: введено некорректное значение для Scale.");
+        }
+    }
+
+    @FXML
+    public void applyRotation(ActionEvent event) {
+        try {
+            ROTATION = Float.parseFloat(rotationStepField.getText());
+            System.out.println("Rotation обновлен: " + ROTATION);
+        } catch (NumberFormatException e) {
+            System.out.println("Ошибка: введено некорректное значение для Rotation.");
+        }
+    }
+
+    @FXML
+    public void applyTranslation(ActionEvent event) {
+        try {
+            TRANSLATION = Float.parseFloat(translationStepField.getText());
+            System.out.println("Translation обновлен: " + TRANSLATION);
+        } catch (NumberFormatException e) {
+            System.out.println("Ошибка: введено некорректное значение для Translation.");
+        }
+    }
     @FXML
     public void handleModelScaleX(ActionEvent actionEvent) {
         if (activeModelIndex != -1) {
@@ -663,8 +700,8 @@ public class GuiController {
     // Метод для переключения на тёмную тему
     @FXML
     private void handleDarkTheme(ActionEvent event) {
-        modelColorPicker.setValue(Color.WHITE);
-        backgroundColorPicker.setValue(Color.BLACK);
+        modelColorPicker.setValue(Color.LIGHTGRAY);
+        backgroundColorPicker.setValue(Color.rgb(64, 64, 64));
     }
 
     // Метод для применения трансформаций
