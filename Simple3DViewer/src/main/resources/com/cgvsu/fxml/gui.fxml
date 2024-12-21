@@ -7,6 +7,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.canvas.Canvas?>
 <?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Button?>
 
 <AnchorPane fx:id="anchorPane" xmlns:fx="http://javafx.com/fxml" fx:controller="com.cgvsu.GuiController">
     <MenuBar>
@@ -24,6 +25,11 @@
             <MenuItem mnemonicParsing="false" onAction="#onSaveTransformedModelMenuItemClick" text="Save Transformed Model">
                 <accelerator>
                     <KeyCodeCombination alt="UP" control="DOWN" meta="UP" shift="UP" shortcut="UP" code="P"/>
+                </accelerator>
+            </MenuItem>
+            <MenuItem mnemonicParsing="false" onAction="#onLoadTextureMenuItemClick" text="Load Texture">
+                <accelerator>
+                    <KeyCodeCombination alt="UP" control="DOWN" meta="UP" shift="UP" shortcut="UP" code="T"/>
                 </accelerator>
             </MenuItem>
             <MenuItem mnemonicParsing="false" onAction="#onRemoveModelButtonClick" text="Delete Model">
@@ -156,8 +162,9 @@
         </Menu>
     </MenuBar>
 
+
     <Canvas fx:id="canvas" width="1600" height="870" AnchorPane.topAnchor="30.0"/>
 
     <!-- Список моделей -->
-    <ListView fx:id="modelListView" prefHeight="200" prefWidth="200" AnchorPane.leftAnchor="10" AnchorPane.topAnchor="60" />
+    <ListView fx:id="modelListView" prefHeight="200" prefWidth="200" AnchorPane.leftAnchor="10" AnchorPane.topAnchor="30" />
 </AnchorPane>

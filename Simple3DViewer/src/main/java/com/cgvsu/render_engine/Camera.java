@@ -4,7 +4,6 @@ import com.cgvsu.math.Vector3f;
 import com.cgvsu.math.matrix.Matrix4f;
 
 public class Camera {
-
     public Camera(
             final Vector3f position,
             final Vector3f target,
@@ -18,6 +17,22 @@ public class Camera {
         this.aspectRatio = aspectRatio;
         this.nearPlane = nearPlane;
         this.farPlane = farPlane;
+
+        // Источник света привязывается к камере
+        this.lightPosition = new Vector3f(position.getX(), position.getY(), position.getZ());
+    }
+
+    public Vector3f getLightPosition() {
+        return lightPosition;
+    }
+
+    public void setLightPosition(Vector3f lightPosition) {
+        this.lightPosition = lightPosition;
+    }
+    public void movePositionAndTarget(final Vector3f translation) {
+        this.position.add(translation);
+        this.target.add(translation);
+        this.lightPosition.add(translation); // Обновляем позицию источника света
     }
 
     public void setPosition(final Vector3f position) {
@@ -47,10 +62,7 @@ public class Camera {
     public void moveTarget(final Vector3f translation) {
         this.target.add(translation);
     }
-    public void movePositionAndTarget(final Vector3f translation) {
-        this.position.add(translation);
-        this.target.add(translation);
-    }
+
 
     Matrix4f getViewMatrix() {
         return GraphicConveyor.lookAt(position, target);
@@ -94,8 +106,9 @@ public class Camera {
     }
     //////////// конец мышь
 
-    private Vector3f position;
-    private Vector3f target;
+    private Vector3f lightPosition; // Позиция источника света
+    private Vector3f position; // Позиция камеры
+    private Vector3f target; // Цель камеры
     private float fov;
     private float aspectRatio;
     private float nearPlane;

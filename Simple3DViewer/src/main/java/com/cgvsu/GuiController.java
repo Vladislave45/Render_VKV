@@ -16,6 +16,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.control.ListView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
 
@@ -83,7 +84,16 @@ public class GuiController {
 
             // Рендеринг всех моделей
             for (Model model : models) {
-                RenderEngine.render(canvas.getGraphicsContext2D(), camera, model, (int) width, (int) height, isRasterizationEnabled, texture);
+                RenderEngine.render(
+                        canvas.getGraphicsContext2D(),
+                        camera,
+                        model,
+                        (int) width,
+                        (int) height,
+                        isRasterizationEnabled,
+                        texture,
+                        texture == null ? Color.LIGHTGRAY : null // Передаем цвет только если текстура не задана
+                );
             }
         });
 
