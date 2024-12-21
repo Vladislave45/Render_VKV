@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.List;
 
 public class GuiController {
 
@@ -55,6 +56,8 @@ public class GuiController {
             new Vector3f(0, 0, 100),
             new Vector3f(0, 0, 0),
             1.0F, 1, 0.01F, 100);
+
+    private List<Integer> selectedVertices = new ArrayList<>();
 
     private Timeline timeline;
 
@@ -88,7 +91,7 @@ public class GuiController {
 
             // Рендеринг всех моделей
             for (Model model : models) {
-                RenderEngine.render(canvas.getGraphicsContext2D(), camera, model, (int) width, (int) height);
+                RenderEngine.render(canvas.getGraphicsContext2D(), camera, model, (int) width, (int) height, selectedVertices);
             }
         });
 
