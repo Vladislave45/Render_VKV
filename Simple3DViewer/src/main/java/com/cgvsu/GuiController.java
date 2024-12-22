@@ -87,6 +87,10 @@ public class GuiController {
 
     @FXML
     private void initialize() {
+        // Устанавливаем фокус на Canvas
+        canvas.setFocusTraversable(true);
+        canvas.requestFocus();
+
         // Инициализация цветов и тем
         modelColorPicker.setValue(Color.BLACK);
         backgroundColorPicker.setValue(Color.WHITE);
@@ -315,13 +319,26 @@ public class GuiController {
     }
 
     // Обработка нажатия клавиш
+    @FXML
     private void handleKeyPressed(KeyEvent event) {
-        if (event.getCode() == KeyCode.DELETE) {
-            // Удаление выбранных вершин
-            if (activeModelIndex != -1) {
-                Model activeModel = models.get(activeModelIndex);
-                activeModel.removeVertices(selectedVertices);
-                selectedVertices.clear(); // Очищаем список выбранных вершин
+        Camera activeCamera = cameraManager.getActiveCamera(); // Получаем активную камеру
+        if (activeCamera == null) {
+            System.out.println("Нет активной камеры для управления");
+            return;
+        }
+
+        switch (event.getCode()) {
+            case W -> activeCamera.movePosition(new Vector3f(0, 0, -TRANSLATION)); // Вперед
+            case S -> activeCamera.movePosition(new Vector3f(0, 0, TRANSLATION)); // Назад
+            case A -> activeCamera.movePositionAndTarget(new Vector3f(TRANSLATION, 0, 0)); // Влево
+            case D -> activeCamera.movePositionAndTarget(new Vector3f(-TRANSLATION, 0, 0)); // Вправо
+            case DELETE -> {
+                // Удаление выбранных вершин
+                if (activeModelIndex != -1) {
+                    Model activeModel = models.get(activeModelIndex);
+                    activeModel.removeVertices(selectedVertices);
+                    selectedVertices.clear(); // Очищаем список выбранных вершин
+                }
             }
         }
     }
@@ -870,6 +887,9 @@ public class GuiController {
         cameraManager.addCamera(newCamera);
         updateCameraComboBox(); // Обновляем ComboBox
         updateActiveCameraLabel();
+
+        // Убеждаемся, что Canvas в фокусе
+        canvas.requestFocus();
     }
 
     @FXML
@@ -904,6 +924,13 @@ public class GuiController {
         if (selectedIndex >= 0 && selectedIndex < cameraManager.getCameras().size()) {
             cameraManager.setActiveCamera(selectedIndex); // Устанавливаем активную камеру
             updateActiveCameraLabel(); // Обновляем метку активной камеры
+
+            // Переподключаем обработчики событий клавиатуры
+            canvas.setOnKeyPressed(event -> handleKeyPressed(event));
+            canvas.setOnKeyReleased(event -> handleKeyReleased(event));
+
+            // Убеждаемся, что Canvas в фокусе
+            canvas.requestFocus();
         }
     }
 }
