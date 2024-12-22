@@ -1,49 +1,60 @@
 package com.cgvsu.utils;
 
 import com.cgvsu.math.Vector3f;
+import com.cgvsu.model.Model;
 import com.cgvsu.model.Polygon;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class NormalUtils {
 
-    private static Vector3f normalPolygon(Polygon polygon, List<Vector3f> vertices) {
-        List<Integer> vertexIndices = polygon.getVertexIndices();
-        try {
-            return Vector3f.crossProduct(
-                    Vector3f.deduct(vertices.get(vertexIndices.get(0)), vertices.get(vertexIndices.get(1))),
-                    Vector3f.deduct(vertices.get(vertexIndices.get(0)), vertices.get(vertexIndices.get(2))));
-        } catch (IndexOutOfBoundsException e) {
-            throw new IndexOutOfBoundsException("Polygon vertices amount < 3");
+    /**
+     * Пересчитывает нормали вершин на основе нормалей полигонов.
+     * @param model Модель, для которой нужно пересчитать нормали.
+     * @return Список нормалей вершин.
+     */
+    public static List<Vector3f> recalculateVertexNormals(Model model) {
+        List<Vector3f> vertexNormals = new ArrayList<>();
+        for (int i = 0; i < model.vertices.size(); i++) {
+            vertexNormals.add(new Vector3f(0, 0, 0)); // Инициализируем нормали вершин нулями
         }
-    }
 
-    public static List<Vector3f> normalsVertex(List<Vector3f> vertices, List<Polygon> polygons) {
-        List<Vector3f> normalsVertex = new java.util.ArrayList<>();
-        List<Vector3f> normalsPolygon = new java.util.ArrayList<>();
-
-        Integer[] count = new Integer[vertices.size()];
-        Vector3f[] normalSummaVertex = new Vector3f[vertices.size()];
-
-        for (int indexPoligon = 0; indexPoligon < polygons.size(); indexPoligon++) {
-            normalsPolygon.add(indexPoligon, normalPolygon(polygons.get(indexPoligon), vertices));
-            List<Integer> vertexIndices = polygons.get(indexPoligon).getVertexIndices();
-
-            polygons.get(indexPoligon).setNormalIndices(vertexIndices);
-
-            for (Integer vertexIndex : vertexIndices) {
-                if (normalSummaVertex[vertexIndex] == null) {
-                    normalSummaVertex[vertexIndex] = normalsPolygon.get(indexPoligon);
-                    count[vertexIndex] = 1;
-                } else {
-                    normalSummaVertex[vertexIndex] = Vector3f.add(normalSummaVertex[vertexIndex], normalsPolygon.get(indexPoligon));
-                    count[vertexIndex]++;
-                }
+        // Пересчитываем нормали вершин
+        for (Polygon polygon : model.polygons) {
+            Vector3f polygonNormal = calculatePolygonNormal(polygon, model.vertices);
+            for (int vertexIndex : polygon.getVertexIndices()) {
+                vertexNormals.get(vertexIndex).add(polygonNormal); // Суммируем нормали полигонов
             }
         }
-        for (int i = 0; i < count.length; i++) {
-            normalsVertex.add(i, normalSummaVertex[i].normalize());
+
+        // Нормализуем нормали вершин
+        for (Vector3f normal : vertexNormals) {
+            normal.normalize();
         }
-        return normalsVertex;
+
+        return vertexNormals;
+    }
+
+    /**
+     * Вычисляет нормаль полигона.
+     * @param polygon Полигон.
+     * @param vertices Список вершин модели.
+     * @return Нормаль полигона.
+     */
+    private static Vector3f calculatePolygonNormal(Polygon polygon, List<Vector3f> vertices) {
+        List<Integer> vertexIndices = polygon.getVertexIndices();
+        if (vertexIndices.size() < 3) {
+            throw new IllegalArgumentException("Polygon must have at least 3 vertices.");
+        }
+
+        Vector3f v1 = vertices.get(vertexIndices.get(0));
+        Vector3f v2 = vertices.get(vertexIndices.get(1));
+        Vector3f v3 = vertices.get(vertexIndices.get(2));
+
+        Vector3f edge1 = Vector3f.deduct(v2, v1);
+        Vector3f edge2 = Vector3f.deduct(v3, v1);
+
+        return Vector3f.crossProduct(edge1, edge2).normalize();
     }
 }
