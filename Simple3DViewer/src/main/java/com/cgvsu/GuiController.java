@@ -113,10 +113,7 @@ public class GuiController {
         });
 
 
-        timeline = new Timeline();
-        timeline.setCycleCount(Animation.INDEFINITE);
-
-        KeyFrame frame = new KeyFrame(Duration.millis(15), event -> {
+        timeline = new Timeline(new KeyFrame(Duration.millis(33), event -> {
             double width = canvas.getWidth();
             double height = canvas.getHeight();
 
@@ -128,22 +125,21 @@ public class GuiController {
             Color backgroundColor = backgroundColorPicker.getValue();
 
             // Рендеринг всех моделей
-            for (Model model : models) {
-                RenderEngine.render(
-                        canvas.getGraphicsContext2D(),
-                        camera,
-                        models,
-                        (int) width,
-                        (int) height,
-                        selectedVertices,
-                        modelColor,
-                        backgroundColor
-                );
-            }
-        });
-
-        timeline.getKeyFrames().add(frame);
+            RenderEngine.render(
+                    canvas.getGraphicsContext2D(),
+                    camera,
+                    models, // Передаем список моделей
+                    (int) width,
+                    (int) height,
+                    selectedVertices,
+                    modelColor,
+                    backgroundColor
+            );
+        }));
+        timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();
+
+
 
         canvas.setOnMousePressed(event -> handleMousePressed(event));
         canvas.setOnMouseDragged(event -> handleMouseDragged(event));
