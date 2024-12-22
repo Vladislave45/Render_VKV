@@ -8,6 +8,7 @@ import com.cgvsu.math.Vector3f;
 import com.cgvsu.render_engine.GraphicConveyor;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class ObjWriter {
 
@@ -18,8 +19,8 @@ public class ObjWriter {
     public static String write(Model model, boolean applyTransformations) {
         StringBuilder sb = new StringBuilder();
 
-        ArrayList<Vector3f> vertices = model.vertices;
-        ArrayList<Polygon> polygons = model.polygons;
+        List<Vector3f> vertices = model.vertices;
+        List<Polygon> polygons = model.polygons;
 
         if (applyTransformations) {
             // применить к вершинам

@@ -25,13 +25,20 @@
                     <KeyCodeCombination alt="UP" control="DOWN" meta="UP" shift="UP" shortcut="UP" code="L"/>
                 </accelerator>
             </MenuItem>
+
+            <MenuItem mnemonicParsing="false" onAction="#onLoadTextureMenuItemClick" text="Load Texture">
+                <accelerator>
+                    <KeyCodeCombination alt="UP" control="DOWN" meta="UP" shift="UP" shortcut="UP" code="T"/>
+                </accelerator>
+            </MenuItem>
+
             <MenuItem mnemonicParsing="false" onAction="#onSaveOriginalModelMenuItemClick" text="Save Original Model">
                 <accelerator>
                     <KeyCodeCombination alt="UP" control="DOWN" meta="UP" shift="UP" shortcut="UP" code="O"/>
                 </accelerator>
             </MenuItem>
-            <MenuItem mnemonicParsing="false" onAction="#onSaveTransformedModelMenuItemClick"
-                      text="Save Transformed Model">
+                <MenuItem mnemonicParsing="false" onAction="#onSaveTransformedModelMenuItemClick"
+                          text="Save Transformed Model">
                 <accelerator>
                     <KeyCodeCombination alt="UP" control="DOWN" meta="UP" shift="UP" shortcut="UP" code="P"/>
                 </accelerator>
@@ -156,6 +163,16 @@
                 </accelerator>
             </MenuItem>
         </Menu>
+
+        <Menu mnemonicParsing="false" text="Triangulation">
+            <MenuItem mnemonicParsing="false" onAction="#handleTriangulate" text="On"/>
+            <MenuItem mnemonicParsing="false" onAction="#handleDisableTriangulate" text="Off"/>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Rasterization">
+            <MenuItem mnemonicParsing="false" onAction="#handleEnableRasterization" text="On"/>
+            <MenuItem mnemonicParsing="false" onAction="#handleDisableRasterization" text="Off"/>
+        </Menu>
+
     </MenuBar>
 
 
@@ -244,7 +261,7 @@
     </Accordion>
 
     <Button fx:id="removeVerticesButton" onAction="#handleRemoveVerticesButtonClick" text="Remove Vertices"
-            AnchorPane.leftAnchor="220" AnchorPane.topAnchor="0"/>
+            AnchorPane.leftAnchor="400" AnchorPane.topAnchor="0"/>
 
 
     <ListView fx:id="modelListView" prefHeight="200" prefWidth="200" AnchorPane.leftAnchor="10"

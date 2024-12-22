@@ -10,6 +10,7 @@ import com.cgvsu.objwriter.ObjWriter;
 import com.cgvsu.render_engine.Camera;
 import com.cgvsu.render_engine.GraphicConveyor;
 import com.cgvsu.render_engine.RenderEngine;
+import com.cgvsu.utils.Triangulation;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -20,6 +21,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ColorPicker;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
@@ -49,6 +51,9 @@ public class GuiController {
 
     @FXML
     private Canvas canvas;
+
+    private boolean isTriangulationEnabled = false; // Флаг для триангуляции
+    private boolean isRasterizationEnabled = false; // Флаг для растеризации
 
     @FXML
     private ListView<String> modelListView; // Список моделей
@@ -137,7 +142,10 @@ public class GuiController {
                         (int) height,
                         selectedVertices,
                         modelColor,
-                        backgroundColor
+                        backgroundColor,
+                        isRasterizationEnabled,
+                        texture,
+                        texture == null ? Color.LIGHTGRAY : null // Передаем цвет только если текстура не задана
                 );
             }
         });
@@ -734,6 +742,72 @@ public class GuiController {
             timeline.playFromStart();
         } catch (NumberFormatException e) {
             System.out.println("Ошибка: введите корректные числа для трансформации.");
+        }
+    }
+
+
+    // Новые методы для управления триангуляцией и растеризацией
+
+    private boolean isTriangulationApplied = false; // Флаг для проверки, была ли уже применена триангуляция
+    private Model originalModel; // Переменная для хранения оригинальной модели
+    @FXML
+    private void handleTriangulate(ActionEvent event) {
+        if (!isTriangulationApplied) {
+            isTriangulationEnabled = true;
+            System.out.println("Триангуляция включена");
+            if (activeModelIndex != -1) {
+                Model activeModel = models.get(activeModelIndex);
+                originalModel = activeModel; // Сохраняем оригинальную модель
+                models.set(activeModelIndex, Triangulation.getTriangulatedModel(activeModel));
+                isTriangulationApplied = true;
+                timeline.playFromStart();
+            }
+        } else {
+            System.out.println("Триангуляция уже была применена");
+        }
+    }
+
+    @FXML
+    private void handleDisableTriangulate(ActionEvent event) {
+        isTriangulationEnabled = false;
+        isTriangulationApplied = false;
+        System.out.println("Триангуляция отключена");
+        if (activeModelIndex != -1) {
+            models.set(activeModelIndex, loadOriginalModel()); // Возвращаем оригинальную модель
+            timeline.playFromStart(); // Перерисовываем сцену
+        }
+    }
+
+    @FXML
+    private void handleEnableRasterization(ActionEvent event) {
+        isRasterizationEnabled = true;
+        System.out.println("Растеризация включена");
+        timeline.playFromStart(); // Перерисовываем сцену
+    }
+
+    @FXML
+    private void handleDisableRasterization(ActionEvent event) {
+        isRasterizationEnabled = false;
+        System.out.println("Растеризация отключена");
+        timeline.playFromStart(); // Перерисовываем сцену
+    }
+
+    private Model loadOriginalModel() {
+// Возвращаем сохранённую оригинальную модель
+        return originalModel;
+    }
+
+    private Image texture;
+    @FXML
+    private void onLoadTextureMenuItemClick() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg"));
+        fileChooser.setTitle("Загрузить текстуру");
+
+        File file = fileChooser.showOpenDialog((anchorPane.getScene().getWindow()));
+        if (file != null) {
+            texture = new Image(file.toURI().toString());
+            System.out.println("Загруженная текстура: " + file.getName());
         }
     }
 }
