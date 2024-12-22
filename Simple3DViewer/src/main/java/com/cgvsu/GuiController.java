@@ -6,6 +6,7 @@ import com.cgvsu.math.matrix.Matrix4f;
 import com.cgvsu.model.Model;
 import com.cgvsu.model.Polygon;
 import com.cgvsu.objreader.ObjReader;
+import com.cgvsu.objreader.ObjReaderException;
 import com.cgvsu.objwriter.ObjWriter;
 import com.cgvsu.render_engine.Camera;
 import com.cgvsu.render_engine.GraphicConveyor;
@@ -16,10 +17,7 @@ import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.control.Button;
-import javafx.scene.control.ColorPicker;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
@@ -299,11 +297,20 @@ public class GuiController {
             models.add(newModel);
             updateModelList();
             setActiveModel(models.size() - 1);
-        } catch (IOException exception) {
-            System.out.println("Ошибка загрузки модели: " + exception.getMessage());
+        } catch (IOException e) {
+            showErrorDialog("Ошибка загрузки файла", "Не удалось прочитать файл: " + e.getMessage());
+        } catch (ObjReaderException e) {
+            showErrorDialog("Ошибка парсинга OBJ файла", e.getMessage());
         }
     }
-
+    @FXML
+    private void showErrorDialog(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
     @FXML
     private void onRemoveModelButtonClick() {
         if (activeModelIndex != -1) {
