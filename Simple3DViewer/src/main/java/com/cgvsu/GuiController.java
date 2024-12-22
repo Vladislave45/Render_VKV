@@ -132,7 +132,7 @@ public class GuiController {
                 RenderEngine.render(
                         canvas.getGraphicsContext2D(),
                         camera,
-                        model,
+                        models,
                         (int) width,
                         (int) height,
                         selectedVertices,
