@@ -39,8 +39,8 @@
                     <KeyCodeCombination alt="UP" control="DOWN" meta="UP" shift="UP" shortcut="UP" code="O"/>
                 </accelerator>
             </MenuItem>
-                <MenuItem mnemonicParsing="false" onAction="#onSaveTransformedModelMenuItemClick"
-                          text="Save Transformed Model">
+            <MenuItem mnemonicParsing="false" onAction="#onSaveTransformedModelMenuItemClick"
+                      text="Save Transformed Model">
                 <accelerator>
                     <KeyCodeCombination alt="UP" control="DOWN" meta="UP" shift="UP" shortcut="UP" code="P"/>
                 </accelerator>
@@ -265,23 +265,23 @@
 
             <!-- Кнопки отрисовки модели -->
             <TitledPane text="Rendering modes">
-            <VBox>
-                <CheckBox fx:id="drawWireframeCheckBox" text="Рисовать полигональную сетку" />
-                <CheckBox fx:id="useTextureCheckBox" text="Использовать текстуру" />
-                <CheckBox fx:id="useLightingCheckBox" text="Использовать освещение" />
+                <VBox>
+                    <CheckBox fx:id="drawWireframeCheckBox" text="Рисовать полигональную сетку" />
+                    <CheckBox fx:id="useTextureCheckBox" text="Использовать текстуру" />
+                    <CheckBox fx:id="useLightingCheckBox" text="Использовать освещение" />
 
-            </VBox>
-        </TitledPane>
+                </VBox>
+            </TitledPane>
 
             <!-- Камеры" -->
             <TitledPane text="Camera Settings">
-            <VBox fx:id="cameraControlsPanel" spacing="10" alignment="CENTER" layoutX="10" layoutY="10">
-                <Button fx:id="addCameraButton" text="Добавить камеру" onAction="#handleAddCamera"/>
-                <Button fx:id="removeCameraButton" text="Удалить камеру" onAction="#handleRemoveCamera"/>
+                <VBox fx:id="cameraControlsPanel" spacing="10" alignment="CENTER" layoutX="10" layoutY="10">
+                    <Button fx:id="addCameraButton" text="Добавить камеру" onAction="#handleAddCamera"/>
+                    <Button fx:id="removeCameraButton" text="Удалить камеру" onAction="#handleRemoveCamera"/>
 
-                <ComboBox fx:id="cameraComboBox" onAction="#handleCameraSelection"/>
-            </VBox>
-        </TitledPane>
+                    <ComboBox fx:id="cameraComboBox" onAction="#handleCameraSelection"/>
+                </VBox>
+            </TitledPane>
 
 
 
