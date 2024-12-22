@@ -161,7 +161,9 @@ public class GuiController {
                             backgroundColor,
                             isRasterizationEnabled,
                             texture,
-                            texture == null ? Color.LIGHTGRAY : null // Передаем цвет только если текстура не задана
+                            texture == null ? Color.LIGHTGRAY : null, // Передаем цвет только если текстура не задана
+                            drawWireframeCheckBox.isSelected(), // Передаем состояние режима полигональной сетки
+                            useLightingCheckBox.isSelected() // Передаем состояние режима освещения
                     );
                 }
             } else {
@@ -181,6 +183,42 @@ public class GuiController {
         // Обработка событий клавиатуры
         canvas.setOnKeyPressed(event -> handleKeyPressed(event));
         canvas.setOnKeyReleased(event -> handleKeyReleased(event));
+
+        // Установка начальных значений
+        drawWireframeCheckBox.setSelected(true);
+        useTextureCheckBox.setSelected(false);
+        useLightingCheckBox.setSelected(true);
+
+        // Подключение обработчиков событий
+        drawWireframeCheckBox.setOnAction(event -> {
+            boolean isWireframeEnabled = drawWireframeCheckBox.isSelected();
+            System.out.println("Wireframe mode: " + (isWireframeEnabled ? "Enabled" : "Disabled"));
+            timeline.playFromStart(); // Перерисовываем сцену
+        });
+
+        useTextureCheckBox.setOnAction(this::handleUseTexture);
+        useLightingCheckBox.setOnAction(this::handleUseLighting);
+    }
+
+    private void handleDrawWireframe(ActionEvent event) {
+        boolean isWireframeEnabled = drawWireframeCheckBox.isSelected();
+        System.out.println("Wireframe mode: " + (isWireframeEnabled ? "Enabled" : "Disabled"));
+        // Пример: перерисовка сцены с учетом нового режима
+        timeline.playFromStart();
+    }
+
+    @FXML
+    private void handleUseTexture(ActionEvent event) {
+        boolean isTextureEnabled = useTextureCheckBox.isSelected();
+        System.out.println("Texture mode: " + (isTextureEnabled ? "Enabled" : "Disabled"));
+        timeline.playFromStart(); // Перерисовываем сцену с учетом нового состояния текстуры
+    }
+
+    private void handleUseLighting(ActionEvent event) {
+        boolean isLightingEnabled = useLightingCheckBox.isSelected();
+        System.out.println("Lighting mode: " + (isLightingEnabled ? "Enabled" : "Disabled"));
+        // Пример: перерисовка сцены с учетом нового режима
+        timeline.playFromStart();
     }
 
     // Метод для обновления ComboBox
@@ -319,25 +357,23 @@ public class GuiController {
     }
 
     // Обработка нажатия клавиш
-    @FXML
     private void handleKeyPressed(KeyEvent event) {
-        Camera activeCamera = cameraManager.getActiveCamera(); // Получаем активную камеру
+        Camera activeCamera = cameraManager.getActiveCamera();
         if (activeCamera == null) {
             System.out.println("Нет активной камеры для управления");
             return;
         }
 
         switch (event.getCode()) {
-            case W -> activeCamera.movePosition(new Vector3f(0, 0, -TRANSLATION)); // Вперед
-            case S -> activeCamera.movePosition(new Vector3f(0, 0, TRANSLATION)); // Назад
-            case A -> activeCamera.movePositionAndTarget(new Vector3f(TRANSLATION, 0, 0)); // Влево
-            case D -> activeCamera.movePositionAndTarget(new Vector3f(-TRANSLATION, 0, 0)); // Вправо
+            case W -> activeCamera.movePosition(new Vector3f(0, 0, -TRANSLATION));
+            case S -> activeCamera.movePosition(new Vector3f(0, 0, TRANSLATION));
+            case A -> activeCamera.movePositionAndTarget(new Vector3f(TRANSLATION, 0, 0));
+            case D -> activeCamera.movePositionAndTarget(new Vector3f(-TRANSLATION, 0, 0));
             case DELETE -> {
-                // Удаление выбранных вершин
                 if (activeModelIndex != -1) {
                     Model activeModel = models.get(activeModelIndex);
                     activeModel.removeVertices(selectedVertices);
-                    selectedVertices.clear(); // Очищаем список выбранных вершин
+                    selectedVertices.clear();
                 }
             }
         }
@@ -766,7 +802,6 @@ public class GuiController {
         Model activeModel = models.get(activeModelIndex);
 
         try {
-            // Парсинг значений из текстовых полей
             float scaleX = Float.parseFloat(scaleXField.getText());
             float scaleY = Float.parseFloat(scaleYField.getText());
             float scaleZ = Float.parseFloat(scaleZField.getText());
@@ -779,12 +814,10 @@ public class GuiController {
             float translateY = Float.parseFloat(translateYField.getText());
             float translateZ = Float.parseFloat(translateZField.getText());
 
-            // Применение трансформаций к модели
             activeModel.setScale(new Vector3f(scaleX, scaleY, scaleZ));
             activeModel.setRotation(new Vector3f(rotateX, rotateY, rotateZ));
             activeModel.setTranslation(new Vector3f(translateX, translateY, translateZ));
 
-            // Обновление рендеринга
             timeline.playFromStart();
         } catch (NumberFormatException e) {
             System.out.println("Ошибка: введите корректные числа для трансформации.");
@@ -803,7 +836,9 @@ public class GuiController {
             System.out.println("Триангуляция включена");
             if (activeModelIndex != -1) {
                 Model activeModel = models.get(activeModelIndex);
-                originalModel = activeModel; // Сохраняем оригинальную модель
+                originalModel = new Model(); // Создаем копию оригинальной модели
+                originalModel.vertices = new ArrayList<>(activeModel.vertices);
+                originalModel.polygons = new ArrayList<>(activeModel.polygons);
                 models.set(activeModelIndex, Triangulation.getTriangulatedModel(activeModel));
                 isTriangulationApplied = true;
                 timeline.playFromStart();
@@ -818,8 +853,8 @@ public class GuiController {
         isTriangulationEnabled = false;
         isTriangulationApplied = false;
         System.out.println("Триангуляция отключена");
-        if (activeModelIndex != -1) {
-            models.set(activeModelIndex, loadOriginalModel()); // Возвращаем оригинальную модель
+        if (activeModelIndex != -1 && originalModel != null) {
+            models.set(activeModelIndex, originalModel); // Возвращаем оригинальную модель
             timeline.playFromStart(); // Перерисовываем сцену
         }
     }
@@ -902,13 +937,6 @@ public class GuiController {
         }
     }
 
-    @FXML
-    private void handleSwitchCamera() {
-        int nextIndex = (cameraManager.getActiveCameraIndex() + 1) % cameraManager.getCameras().size();
-        cameraManager.setActiveCamera(nextIndex);
-        updateActiveCameraLabel();
-    }
-
     private void updateActiveCameraLabel() {
         Camera activeCamera = cameraManager.getActiveCamera();
         if (activeCamera != null) {
@@ -922,15 +950,22 @@ public class GuiController {
     private void handleCameraSelection() {
         int selectedIndex = cameraComboBox.getSelectionModel().getSelectedIndex();
         if (selectedIndex >= 0 && selectedIndex < cameraManager.getCameras().size()) {
-            cameraManager.setActiveCamera(selectedIndex); // Устанавливаем активную камеру
-            updateActiveCameraLabel(); // Обновляем метку активной камеры
+            cameraManager.setActiveCamera(selectedIndex);
+            updateActiveCameraLabel();
 
-            // Переподключаем обработчики событий клавиатуры
             canvas.setOnKeyPressed(event -> handleKeyPressed(event));
             canvas.setOnKeyReleased(event -> handleKeyReleased(event));
 
-            // Убеждаемся, что Canvas в фокусе
             canvas.requestFocus();
         }
     }
+
+    @FXML
+    private CheckBox drawWireframeCheckBox;
+
+    @FXML
+    private CheckBox useTextureCheckBox;
+
+    @FXML
+    private CheckBox useLightingCheckBox;
 }

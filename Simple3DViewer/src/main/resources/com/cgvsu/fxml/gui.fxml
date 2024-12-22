@@ -17,6 +17,7 @@
 <?import javafx.scene.control.Accordion?>
 <?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.CheckBox?>
 <AnchorPane fx:id="anchorPane" xmlns:fx="http://javafx.com/fxml" fx:controller="com.cgvsu.GuiController">
     <Canvas fx:id="canvas" width="1600" height="870"/>
     <MenuBar>
@@ -262,6 +263,15 @@
 
 
 
+            <!-- Кнопки отрисовки модели -->
+            <TitledPane text="Rendering modes">
+            <VBox>
+                <CheckBox fx:id="drawWireframeCheckBox" text="Рисовать полигональную сетку" />
+                <CheckBox fx:id="useTextureCheckBox" text="Использовать текстуру" />
+                <CheckBox fx:id="useLightingCheckBox" text="Использовать освещение" />
+
+            </VBox>
+        </TitledPane>
 
             <!-- Камеры" -->
             <TitledPane text="Camera Settings">

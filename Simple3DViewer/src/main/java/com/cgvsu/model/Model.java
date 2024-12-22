@@ -2,6 +2,7 @@ package com.cgvsu.model;
 
 import com.cgvsu.math.Vector2f;
 import com.cgvsu.math.Vector3f;
+import javafx.scene.paint.Color;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -91,4 +92,13 @@ public class Model {
         polygons.removeIf(polygon -> polygon.getVertexIndices().size() < 3);
     }
 
+    private Color staticColor = Color.LIGHTGRAY; // По умолчанию
+
+    public Color getStaticColor() {
+        return staticColor;
+    }
+
+    public void setStaticColor(Color staticColor) {
+        this.staticColor = staticColor;
+    }
 }

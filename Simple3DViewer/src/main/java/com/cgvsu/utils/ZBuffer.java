@@ -10,7 +10,7 @@ public class ZBuffer {
         for (int x = 0; x < width; x++) {
             List<Float> column = new ArrayList<>();
             for (int y = 0; y < height; y++) {
-                column.add(Float.MAX_VALUE);
+                column.add(Float.MAX_VALUE); // Инициализация максимальным значением
             }
             zBuffer.add(column);
         }
