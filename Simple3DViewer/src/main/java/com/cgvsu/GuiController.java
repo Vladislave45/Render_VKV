@@ -8,6 +8,7 @@ import com.cgvsu.model.Polygon;
 import com.cgvsu.objreader.ObjReader;
 import com.cgvsu.objwriter.ObjWriter;
 import com.cgvsu.render_engine.Camera;
+import com.cgvsu.render_engine.CameraManager;
 import com.cgvsu.render_engine.GraphicConveyor;
 import com.cgvsu.render_engine.RenderEngine;
 import com.cgvsu.utils.Triangulation;
@@ -17,10 +18,7 @@ import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.control.Button;
-import javafx.scene.control.ColorPicker;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -89,7 +87,6 @@ public class GuiController {
 
     @FXML
     private void initialize() {
-
         // Инициализация цветов и тем
         modelColorPicker.setValue(Color.BLACK);
         backgroundColorPicker.setValue(Color.WHITE);
@@ -108,6 +105,7 @@ public class GuiController {
         translateZField.setText("0.0");
         modelColorPicker.setValue(Color.BLACK);
         backgroundColorPicker.setValue(Color.WHITE);
+
         // Привязка размеров холста к размерам панели
         anchorPane.prefWidthProperty().addListener((ov, oldValue, newValue) -> canvas.setWidth(newValue.doubleValue()));
         anchorPane.prefHeightProperty().addListener((ov, oldValue, newValue) -> canvas.setHeight(newValue.doubleValue()));
@@ -116,6 +114,16 @@ public class GuiController {
         modelListView.getSelectionModel().selectedIndexProperty().addListener((obs, oldVal, newVal) -> {
             setActiveModel(newVal.intValue());
         });
+
+        // Инициализация CameraManager
+        cameraManager = new CameraManager();
+        cameraManager.addCamera(new Camera(
+                new Vector3f(0, 0, 100),
+                new Vector3f(0, 0, 0),
+                1.0F, 1, 0.01F, 100
+        )); // Добавляем начальную камеру
+        updateCameraComboBox(); // Обновляем ComboBox
+        updateActiveCameraLabel();
 
         // Инициализация таймлайна для рендеринга
         timeline = new Timeline();
@@ -126,32 +134,40 @@ public class GuiController {
             double height = canvas.getHeight();
 
             canvas.getGraphicsContext2D().clearRect(0, 0, width, height);
-            camera.setAspectRatio((float) (width / height));
 
-            // Передача цветов и параметров трансформации
-            Color modelColor = modelColorPicker.getValue();
-            Color backgroundColor = backgroundColorPicker.getValue();
+            // Получаем активную камеру из CameraManager
+            Camera activeCamera = cameraManager.getActiveCamera();
+            if (activeCamera != null) {
+                activeCamera.setAspectRatio((float) (width / height));
 
-            // Рендеринг всех моделей
-            for (Model model : models) {
-                RenderEngine.render(
-                        canvas.getGraphicsContext2D(),
-                        camera,
-                        model,
-                        (int) width,
-                        (int) height,
-                        selectedVertices,
-                        modelColor,
-                        backgroundColor,
-                        isRasterizationEnabled,
-                        texture,
-                        texture == null ? Color.LIGHTGRAY : null // Передаем цвет только если текстура не задана
-                );
+                // Передача цветов и параметров трансформации
+                Color modelColor = modelColorPicker.getValue();
+                Color backgroundColor = backgroundColorPicker.getValue();
+
+                // Рендеринг всех моделей
+                for (Model model : models) {
+                    RenderEngine.render(
+                            canvas.getGraphicsContext2D(),
+                            activeCamera, // Используем активную камеру
+                            model,
+                            (int) width,
+                            (int) height,
+                            selectedVertices,
+                            modelColor,
+                            backgroundColor,
+                            isRasterizationEnabled,
+                            texture,
+                            texture == null ? Color.LIGHTGRAY : null // Передаем цвет только если текстура не задана
+                    );
+                }
+            } else {
+                System.out.println("Нет активной камеры для рендеринга");
             }
         });
 
         timeline.getKeyFrames().add(frame);
         timeline.play();
+
         // Обработка событий мыши
         canvas.setOnMousePressed(event -> handleMousePressed(event));
         canvas.setOnMouseDragged(event -> handleMouseDragged(event));
@@ -161,6 +177,15 @@ public class GuiController {
         // Обработка событий клавиатуры
         canvas.setOnKeyPressed(event -> handleKeyPressed(event));
         canvas.setOnKeyReleased(event -> handleKeyReleased(event));
+    }
+
+    // Метод для обновления ComboBox
+    private void updateCameraComboBox() {
+        cameraComboBox.getItems().clear(); // Очищаем список
+        for (int i = 0; i < cameraManager.getCameras().size(); i++) {
+            cameraComboBox.getItems().add("Камера " + i); // Добавляем камеру в список
+        }
+        cameraComboBox.getSelectionModel().select(cameraManager.getActiveCameraIndex()); // Выбираем активную камеру
     }
 
     // Обработка отпускания клавиши
@@ -243,13 +268,17 @@ public class GuiController {
         camera.rotateAroundTarget(yaw, pitch);
     }
 
-    @FXML
     private void handleMouseScrolled(ScrollEvent event) {
         double deltaY = event.getDeltaY();
-        if (deltaY > 0) {
-            camera.movePosition(new Vector3f(0, 0, -TRANSLATION));
+        Camera activeCamera = cameraManager.getActiveCamera();
+        if (activeCamera != null) {
+            if (deltaY > 0) {
+                activeCamera.movePosition(new Vector3f(0, 0, -TRANSLATION));
+            } else {
+                activeCamera.movePosition(new Vector3f(0, 0, TRANSLATION));
+            }
         } else {
-            camera.movePosition(new Vector3f(0, 0, TRANSLATION));
+            System.out.println("Нет активной камеры для изменения положения");
         }
     }
 
@@ -808,6 +837,73 @@ public class GuiController {
         if (file != null) {
             texture = new Image(file.toURI().toString());
             System.out.println("Загруженная текстура: " + file.getName());
+        }
+    }
+
+
+
+
+    @FXML
+    private Button addCameraButton;
+
+    @FXML
+    private Button removeCameraButton;
+
+    @FXML
+    private Button switchCameraButton;
+
+    @FXML
+    private Label activeCameraLabel;
+
+    private CameraManager cameraManager;
+
+    @FXML
+    private ComboBox<String> cameraComboBox;
+
+    @FXML
+    private void handleAddCamera() {
+        Camera newCamera = new Camera(
+                new Vector3f(0, 0, 100),
+                new Vector3f(0, 0, 0),
+                1.0F, 1, 0.01F, 100
+        );
+        cameraManager.addCamera(newCamera);
+        updateCameraComboBox(); // Обновляем ComboBox
+        updateActiveCameraLabel();
+    }
+
+    @FXML
+    private void handleRemoveCamera() {
+        int activeIndex = cameraManager.getActiveCameraIndex();
+        if (activeIndex >= 0) {
+            cameraManager.removeCamera(activeIndex);
+            updateCameraComboBox(); // Обновляем ComboBox
+            updateActiveCameraLabel();
+        }
+    }
+
+    @FXML
+    private void handleSwitchCamera() {
+        int nextIndex = (cameraManager.getActiveCameraIndex() + 1) % cameraManager.getCameras().size();
+        cameraManager.setActiveCamera(nextIndex);
+        updateActiveCameraLabel();
+    }
+
+    private void updateActiveCameraLabel() {
+        Camera activeCamera = cameraManager.getActiveCamera();
+        if (activeCamera != null) {
+            activeCameraLabel.setText("Активная камера: " + cameraManager.getActiveCameraIndex());
+        } else {
+            activeCameraLabel.setText("Нет активной камеры");
+        }
+    }
+
+    @FXML
+    private void handleCameraSelection() {
+        int selectedIndex = cameraComboBox.getSelectionModel().getSelectedIndex();
+        if (selectedIndex >= 0 && selectedIndex < cameraManager.getCameras().size()) {
+            cameraManager.setActiveCamera(selectedIndex); // Устанавливаем активную камеру
+            updateActiveCameraLabel(); // Обновляем метку активной камеры
         }
     }
 }

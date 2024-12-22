@@ -16,6 +16,7 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.Accordion?>
 <?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.control.ComboBox?>
 <AnchorPane fx:id="anchorPane" xmlns:fx="http://javafx.com/fxml" fx:controller="com.cgvsu.GuiController">
     <Canvas fx:id="canvas" width="1600" height="870"/>
     <MenuBar>
@@ -257,11 +258,33 @@
                     </HBox>
                 </VBox>
             </TitledPane>
+
+
+
+
+
+            <!-- Камеры" -->
+            <TitledPane text="Camera Settings">
+            <VBox fx:id="cameraControlsPanel" spacing="10" alignment="CENTER" layoutX="10" layoutY="10">
+                <Button fx:id="addCameraButton" text="Добавить камеру" onAction="#handleAddCamera"/>
+                <Button fx:id="removeCameraButton" text="Удалить камеру" onAction="#handleRemoveCamera"/>
+
+                <ComboBox fx:id="cameraComboBox" onAction="#handleCameraSelection"/>
+            </VBox>
+        </TitledPane>
+
+
+
+
+
         </panes>
     </Accordion>
 
     <Button fx:id="removeVerticesButton" onAction="#handleRemoveVerticesButtonClick" text="Remove Vertices"
             AnchorPane.leftAnchor="400" AnchorPane.topAnchor="0"/>
+
+
+    <Label fx:id="activeCameraLabel" text="Активная камера: 0" layoutX="10" layoutY="100"/>
 
 
     <ListView fx:id="modelListView" prefHeight="200" prefWidth="200" AnchorPane.leftAnchor="10"
