@@ -52,7 +52,6 @@ public class Model {
         this.name = name;
     }
     public void removeVertices(List<Integer> vertexIndices) {
-        // Удаляем вершины в обратном порядке, чтобы индексы не сбивались
         for (int i = vertexIndices.size() - 1; i >= 0; i--) {
             int vertexIndex = vertexIndices.get(i);
             removeVertexAndUpdatePolygons(vertexIndex);
@@ -67,27 +66,20 @@ public class Model {
     }
 
     private void updatePolygonIndicesAfterVertexRemoval(int removedVertexIndex) {
-        // Перебираем все полигоны
+        // Перебор полигонов
         for (Polygon polygon : polygons) {
             List<Integer> updatedVertexIndices = new ArrayList<>();
-
-            // Перебираем индексы вершин в текущем полигоне
             for (int vertexIndex : polygon.getVertexIndices()) {
                 if (vertexIndex < removedVertexIndex) {
-                    // Если индекс меньше удаленного, он остается без изменений
                     updatedVertexIndices.add(vertexIndex);
                 } else if (vertexIndex > removedVertexIndex) {
-                    // Если индекс больше удаленного, уменьшаем его на 1
                     updatedVertexIndices.add(vertexIndex - 1);
                 }
-                // Если индекс равен удаленному, он пропускается
             }
 
-            // Устанавливаем обновленные индексы в полигон
             polygon.setVertexIndices(updatedVertexIndices);
         }
 
-        // Удаляем полигоны, которые стали невалидными (например, содержат менее 3 вершин)
         polygons.removeIf(polygon -> polygon.getVertexIndices().size() < 3);
     }
 

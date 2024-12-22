@@ -10,13 +10,11 @@ import java.util.Arrays;
 import java.util.Scanner;
 
 public class ObjReader {
-	// Константы для токенов, используемых в формате OBJ
 	private static final String OBJ_VERTEX_TOKEN = "v";
 	private static final String OBJ_TEXTURE_TOKEN = "vt";
 	private static final String OBJ_NORMAL_TOKEN = "vn";
 	private static final String OBJ_FACE_TOKEN = "f";
 
-	// Основной метод для чтения и парсинга файла OBJ
 	public static Model read(String fileContent) {
 		Model result = new Model();
 
@@ -43,7 +41,6 @@ public class ObjReader {
 				// Парсинг полигонов
 				case OBJ_FACE_TOKEN -> {
 					result.polygons.add(parseFace(wordsInLine, lineInd));
-					// Проверка на соответствие текстурных вершин в полигонах
 					if (result.polygons.size() > 1 &&
 							(result.polygons.get(result.polygons.size() - 2).getTextureVertexIndices().size() == 0) !=
 									(result.polygons.get(result.polygons.size() - 1).getTextureVertexIndices().size() == 0))
@@ -55,12 +52,10 @@ public class ObjReader {
 			}
 		}
 
-		// Проверка на наличие хотя бы одного полигона
 		if (result.polygons.size() == 0) {
 			throw new ObjReaderException("OBJ has not any polygons", lineInd);
 		}
 
-		// Проверка на наличие хотя бы одной вершины
 		if (result.vertices.size() == 0) {
 			throw new ObjReaderException("OBJ has not any vertices", lineInd);
 		}
@@ -73,12 +68,10 @@ public class ObjReader {
 
 			for (int i = 0; i < 3; i++) {
 				int vertexIndex = list.getVertexIndices().get(i);
-				// Преобразование отрицательных индексов в положительные
 				if (vertexIndex < 0) {
 					list.getVertexIndices().set(i, result.vertices.size() + 1 + vertexIndex);
 					vertexIndex = list.getVertexIndices().get(i);
 				}
-				// Проверка на выход индекса за пределы допустимых значений
 				if (vertexIndex >= result.vertices.size() || vertexIndex < 0) {
 					throw new ObjReaderException("The polygon is specified incorrectly: vertex index out of bounds.",
 							findLineInObj(
@@ -131,7 +124,6 @@ public class ObjReader {
 	// Метод для парсинга вершин
 	protected static Vector3f parseVertex(final ArrayList<String> wordsInLineWithoutToken, int lineInd) {
 		try {
-			// Проверка на слишком много аргументов
 			if (wordsInLineWithoutToken.size() > 3) {
 				throw new ObjReaderException("Too much vertex arguments.", lineInd);
 			}
@@ -152,7 +144,6 @@ public class ObjReader {
 	// Метод для парсинга текстурных вершин
 	protected static Vector2f parseTextureVertex(final ArrayList<String> wordsInLineWithoutToken, int lineInd) {
 		try {
-			// Проверка на слишком много аргументов
 			if (wordsInLineWithoutToken.size() > 2) {
 				throw new ObjReaderException("Too much texture vertex arguments.", lineInd);
 			}
@@ -171,7 +162,6 @@ public class ObjReader {
 	// Метод для парсинга нормалей
 	protected static Vector3f parseNormal(final ArrayList<String> wordsInLineWithoutToken, int lineInd) {
 		try {
-			// Проверка на слишком много аргументов
 			if (wordsInLineWithoutToken.size() > 3) {
 				throw new ObjReaderException("Too much normal arguments.", lineInd);
 			}
@@ -201,7 +191,6 @@ public class ObjReader {
 			parseFaceWord(s, onePolygonVertexIndices, onePolygonTextureVertexIndices, onePolygonNormalIndices, lineInd);
 		}
 
-		// Проверка на дублирование индексов вершин в полигоне
 		if (findEqualites(onePolygonVertexIndices)) {
 			throw new ObjReaderException("The polygon can`t contain the same vertex indices", lineInd);
 		}

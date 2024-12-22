@@ -72,7 +72,7 @@ public class RenderEngine {
             highlightSelectedVertices(graphicsContext, mesh, modelViewProjectionMatrix, width, height, selectedVertices);
         }
     }
-    // Метод для выделения вершин цветом
+
     private static void highlightSelectedVertices(
             GraphicsContext gc,
             Model mesh,
@@ -89,7 +89,7 @@ public class RenderEngine {
             Vector4f vertexVecmath = new Vector4f(vertex.getX(), vertex.getY(), vertex.getZ(), 1);
             Point2f screenPoint = vertexToPoint(Matrix4f.multiply(modelViewProjectionMatrix, vertexVecmath).normalizeTo3f(), width, height);
 
-            // Рисуем круг вокруг выделенной вершины
+            /// круг
             gc.strokeOval(screenPoint.x - 5, screenPoint.y - 5, 10, 10);
         }
     }

@@ -22,13 +22,11 @@ public class ObjWriter {
         ArrayList<Polygon> polygons = model.polygons;
 
         if (applyTransformations) {
-            // применить к вершинам
             for (Vector3f vertex : vertices) {
                 Vector3f transformedVertex = applyTransformations(vertex, model.getScale(), model.getRotation(), model.getTranslation());
                 sb.append("v ").append(transformedVertex.getX()).append(" ").append(transformedVertex.getY()).append(" ").append(transformedVertex.getZ()).append("\n");
             }
         } else {
-            // сохранить исходные вершины
             for (Vector3f vertex : vertices) {
                 sb.append("v ").append(vertex.getX()).append(" ").append(vertex.getY()).append(" ").append(vertex.getZ()).append("\n");
             }
