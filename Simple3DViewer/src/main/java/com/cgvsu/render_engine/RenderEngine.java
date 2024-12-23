@@ -49,7 +49,7 @@ public class RenderEngine {
 
                     Vector4f vertexVecmath = new Vector4f(vertex.getX(), vertex.getY(), vertex.getZ(), 1);
 
-                    Point2f resultPoint = GraphicConveyor.vertexToPoint(Matrix4f.multiply(modelViewProjectionMatrix, vertexVecmath).normalizeTo3f(), width, height);
+                    Point2f resultPoint = GraphicConveyor.Vector2f(Matrix4f.multiply(modelViewProjectionMatrix, vertexVecmath).normalizeTo3f(), width, height);
                     resultPoints.add(resultPoint);
                 }
 
@@ -89,7 +89,7 @@ public class RenderEngine {
         for (int vertexIndex : selectedVertices) {
             Vector3f vertex = mesh.vertices.get(vertexIndex);
             Vector4f vertexVecmath = new Vector4f(vertex.getX(), vertex.getY(), vertex.getZ(), 1);
-            Point2f screenPoint = vertexToPoint(Matrix4f.multiply(modelViewProjectionMatrix, vertexVecmath).normalizeTo3f(), width, height);
+            Point2f screenPoint = Vector2f(Matrix4f.multiply(modelViewProjectionMatrix, vertexVecmath).normalizeTo3f(), width, height);
 
             /// круг
             gc.strokeOval(screenPoint.x - 5, screenPoint.y - 5, 10, 10);

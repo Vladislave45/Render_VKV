@@ -240,7 +240,7 @@ public class GuiController {
             Vector3f vertex = activeModel.vertices.get(i);
 
             Vector4f vertexVecmath = new Vector4f(vertex.getX(), vertex.getY(), vertex.getZ(), 1);
-            Point2f screenPoint = GraphicConveyor.vertexToPoint(
+            Point2f screenPoint = GraphicConveyor.Vector2f(
                     Matrix4f.multiply(modelViewProjectionMatrix, vertexVecmath).normalizeTo3f(),
                     (int) canvas.getWidth(),
                     (int) canvas.getHeight()
