@@ -97,10 +97,50 @@ public class TriangleRasterization {
             List<Vector3f> vertexNormals,
             Camera camera,
             Color fillColor,
-            boolean useLighting // Добавляем параметр для включения/отключения освещения
+            boolean useLighting
     ) {
-        // Логика растеризации треугольника
-        // Пример: растеризация с использованием z-буфера и текстуры
+        // Сортировка вершин по Y
+        if (v1.getY() > v2.getY()) {
+            Vector2f temp = v1;
+            v1 = v2;
+            v2 = temp;
+
+            Vector3f temp3d = v1_3d;
+            v1_3d = v2_3d;
+            v2_3d = temp3d;
+
+            Vector2f tempTex = t1;
+            t1 = t2;
+            t2 = tempTex;
+        }
+        if (v2.getY() > v3.getY()) {
+            Vector2f temp = v2;
+            v2 = v3;
+            v3 = temp;
+
+            Vector3f temp3d = v2_3d;
+            v2_3d = v3_3d;
+            v3_3d = temp3d;
+
+            Vector2f tempTex = t2;
+            t2 = t3;
+            t3 = tempTex;
+        }
+        if (v1.getY() > v2.getY()) {
+            Vector2f temp = v1;
+            v1 = v2;
+            v2 = temp;
+
+            Vector3f temp3d = v1_3d;
+            v1_3d = v2_3d;
+            v2_3d = temp3d;
+
+            Vector2f tempTex = t1;
+            t1 = t2;
+            t2 = tempTex;
+        }
+
+        // Растеризация треугольника
         int minX = (int) Math.min(v1.getX(), Math.min(v2.getX(), v3.getX()));
         int maxX = (int) Math.max(v1.getX(), Math.max(v2.getX(), v3.getX()));
         int minY = (int) Math.min(v1.getY(), Math.min(v2.getY(), v3.getY()));
@@ -138,9 +178,7 @@ public class TriangleRasterization {
                 ((v2.getY() - v3.getY()) * (v1.getX() - v3.getX()) + (v3.getX() - v2.getX()) * (v1.getY() - v3.getY()));
         float w3 = 1 - w1 - w2;
 
-        // Инвертируем V-координату
-        float v = 1 - (w1 * t1 + w2 * t2 + w3 * t3);
-        return v;
+        return w1 * t1 + w2 * t2 + w3 * t3;
     }
 
     private static Color getTextureColor(Image texture, float u, float v) {
@@ -199,7 +237,9 @@ public class TriangleRasterization {
                 ((v2.getY() - v3.getY()) * (v1.getX() - v3.getX()) + (v3.getX() - v2.getX()) * (v1.getY() - v3.getY()));
         float w3 = 1 - w1 - w2;
 
-        return w1 * v1_3d.getZ() + w2 * v2_3d.getZ() + w3 * v3_3d.getZ();
+        float depth = w1 * v1_3d.getZ() + w2 * v2_3d.getZ() + w3 * v3_3d.getZ();
+
+        return depth;
     }
 
     private static Vector3f interpolateNormal(int x, int y, Vector2f v1, Vector2f v2, Vector2f v3, Vector3f n1, Vector3f n2, Vector3f n3) {

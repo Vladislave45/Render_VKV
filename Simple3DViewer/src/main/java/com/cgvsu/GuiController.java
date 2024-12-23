@@ -86,6 +86,45 @@ public class GuiController {
     /////////
 
     @FXML
+    private void render() {
+        double width = canvas.getWidth();
+        double height = canvas.getHeight();
+
+        canvas.getGraphicsContext2D().clearRect(0, 0, width, height);
+
+        // Получаем активную камеру из CameraManager
+        Camera activeCamera = cameraManager.getActiveCamera();
+        if (activeCamera != null) {
+            activeCamera.setAspectRatio((float) (width / height));
+
+            // Передача цветов и параметров трансформации
+            Color modelColor = modelColorPicker.getValue();
+            Color backgroundColor = backgroundColorPicker.getValue();
+
+            // Рендеринг всех моделей
+            for (Model model : models) {
+                RenderEngine.render(
+                        canvas.getGraphicsContext2D(),
+                        activeCamera, // Используем активную камеру
+                        model,
+                        (int) width,
+                        (int) height,
+                        selectedVertices,
+                        modelColor,
+                        backgroundColor,
+                        isRasterizationEnabled, // Передаем состояние растеризации
+                        useTextureCheckBox.isSelected() ? texture : null, // Передаем текстура, если она включена
+                        texture == null ? Color.LIGHTGRAY : null, // Передаем цвет только если текстура не задана
+                        drawWireframeCheckBox.isSelected(), // Передаем состояние режима полигональной сетки
+                        useLightingCheckBox.isSelected() // Передаем состояние режима освещения
+                );
+            }
+        } else {
+            System.out.println("Нет активной камеры для рендеринга");
+        }
+    }
+
+    @FXML
     private void initialize() {
         // Устанавливаем фокус на Canvas
         canvas.setFocusTraversable(true);
@@ -129,11 +168,18 @@ public class GuiController {
         updateCameraComboBox(); // Обновляем ComboBox
         updateActiveCameraLabel();
 
+        // Привязка обработчика события для useTextureCheckBox
+        useTextureCheckBox.setOnAction(event -> {
+            boolean useTexture = useTextureCheckBox.isSelected(); // Получаем состояние чекбокса
+            System.out.println("Текстура " + (useTexture ? "включена" : "отключена"));
+            timeline.playFromStart(); // Перерисовываем сцену с учетом нового состояния текстуры
+        });
+
         // Инициализация таймлайна для рендеринга
         timeline = new Timeline();
         timeline.setCycleCount(Animation.INDEFINITE);
 
-        KeyFrame frame = new KeyFrame(Duration.millis(15), event -> {
+        KeyFrame frame = new KeyFrame(Duration.millis(33), event -> {
             double width = canvas.getWidth();
             double height = canvas.getHeight();
 
@@ -169,6 +215,7 @@ public class GuiController {
             } else {
                 System.out.println("Нет активной камеры для рендеринга");
             }
+            render(); // Вызов метода render() для обновления сцены
         });
 
         timeline.getKeyFrames().add(frame);
@@ -198,6 +245,19 @@ public class GuiController {
 
         useTextureCheckBox.setOnAction(this::handleUseTexture);
         useLightingCheckBox.setOnAction(this::handleUseLighting);
+
+        // Привязка обработчика события для useTextureCheckBox
+        useTextureCheckBox.setOnAction(event -> render());
+
+        // Привязка обработчика события для drawWireframeCheckBox
+        drawWireframeCheckBox.setOnAction(event -> render());
+
+        // Привязка обработчика события для useLightingCheckBox
+        useLightingCheckBox.setOnAction(event -> render());
+
+        // Привязка обработчика события для других элементов управления
+        modelColorPicker.setOnAction(event -> render());
+        backgroundColorPicker.setOnAction(event -> render());
     }
 
     private void handleDrawWireframe(ActionEvent event) {
@@ -889,6 +949,7 @@ public class GuiController {
         if (file != null) {
             texture = new Image(file.toURI().toString());
             System.out.println("Загруженная текстура: " + file.getName());
+            render(); // Перерисовываем сцену с новой текстурой
         }
     }
 
