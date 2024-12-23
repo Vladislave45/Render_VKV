@@ -22,7 +22,7 @@ public class NormalUtils {
 
         // Пересчитываем нормали вершин
         for (Polygon polygon : model.polygons) {
-            Vector3f polygonNormal = calculatePolygonNormal(polygon, model.vertices);
+            Vector3f polygonNormal = computePolygonNormal(polygon, model.vertices);
             for (int vertexIndex : polygon.getVertexIndices()) {
                 vertexNormals.get(vertexIndex).add(polygonNormal); // Суммируем нормали полигонов
             }
@@ -42,7 +42,7 @@ public class NormalUtils {
      * @param vertices Список вершин модели.
      * @return Нормаль полигона.
      */
-    private static Vector3f calculatePolygonNormal(Polygon polygon, List<Vector3f> vertices) {
+    private static Vector3f computePolygonNormal(Polygon polygon, List<Vector3f> vertices) {
         List<Integer> vertexIndices = polygon.getVertexIndices();
         if (vertexIndices.size() < 3) {
             throw new IllegalArgumentException("Polygon must have at least 3 vertices.");

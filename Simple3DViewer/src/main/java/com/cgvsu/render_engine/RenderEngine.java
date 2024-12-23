@@ -30,11 +30,11 @@ public class RenderEngine {
             final List<Integer> selectedVertices,
             final Color modelColor,
             final Color backgroundColor,
-            final boolean isRasterizationEnabled,
-            final Image texture,
-            final Color fillColor,
-            final boolean isWireframeEnabled, // Уже добавлен
-            final boolean useLighting // Добавляем параметр для включения/отключения освещения
+            final boolean isRasterizationEnabled, // Состояние растеризации
+            final Image texture, // Текстура
+            Color fillColor,
+            final boolean isWireframeEnabled,
+            final boolean useLighting // Состояние освещения
     ) {
         graphicsContext.setStroke(modelColor);
         graphicsContext.setFill(backgroundColor);
@@ -50,20 +50,23 @@ public class RenderEngine {
         Matrix4f modelViewProjectionMatrix = Matrix4f.multiply(projectionMatrix, Matrix4f.multiply(viewMatrix, modelMatrix));
 
         if (isRasterizationEnabled) {
-            renderWithRasterization(graphicsContext, camera, mesh, width, height, modelViewProjectionMatrix, texture, fillColor, useLighting);
+            // Если растеризация включена, окрашиваем модель в зеленый цвет
+            renderWithRasterization(graphicsContext, camera, mesh, width, height, modelViewProjectionMatrix, texture, Color.GREEN, useLighting);
         }
 
         if (isWireframeEnabled) {
+            // Если включена полигональная сетка, рисуем её
             renderWithoutRasterization(graphicsContext, mesh, width, height, modelViewProjectionMatrix, selectedVertices);
         }
 
         if (!selectedVertices.isEmpty()) {
+            // Выделение выбранных вершин
             highlightSelectedVertices(graphicsContext, mesh, modelViewProjectionMatrix, width, height, selectedVertices);
         }
     }
 
     private static void renderWithRasterization(
-            GraphicsContext graphicsContext,
+            GraphicsContext gc,
             Camera camera,
             Model mesh,
             int width,
@@ -71,21 +74,18 @@ public class RenderEngine {
             Matrix4f modelViewProjectionMatrix,
             Image texture,
             Color fillColor,
-            boolean useLighting // Добавляем параметр для включения/отключения освещения
+            boolean useLighting
     ) {
         List<List<Float>> zBuffer = ZBuffer.createZBuffer(width, height);
         List<Vector3f> vertexNormals = NormalUtils.recalculateVertexNormals(mesh);
 
-        final int nPolygons = mesh.polygons.size();
-        for (int polygonInd = 0; polygonInd < nPolygons; ++polygonInd) {
-            final int nVerticesInPolygon = mesh.polygons.get(polygonInd).getVertexIndices().size();
+        for (Polygon polygon : mesh.polygons) {
+            List<Vector2f> resultPoints = new ArrayList<>();
+            List<Vector3f> vertices3D = new ArrayList<>();
+            List<Vector2f> textureCoords = new ArrayList<>();
 
-            ArrayList<Vector2f> resultPoints = new ArrayList<>();
-            ArrayList<Vector3f> vertices3D = new ArrayList<>();
-            ArrayList<Vector2f> textureCoords = new ArrayList<>();
-
-            for (int vertexInPolygonInd = 0; vertexInPolygonInd < nVerticesInPolygon; ++vertexInPolygonInd) {
-                Vector3f vertex = mesh.vertices.get(mesh.polygons.get(polygonInd).getVertexIndices().get(vertexInPolygonInd));
+            for (int i = 0; i < polygon.getVertexIndices().size(); i++) {
+                Vector3f vertex = mesh.vertices.get(polygon.getVertexIndices().get(i));
                 vertices3D.add(vertex);
 
                 Vector4f vertexVecmath = new Vector4f(vertex.getX(), vertex.getY(), vertex.getZ(), 1);
@@ -94,11 +94,11 @@ public class RenderEngine {
                 Vector2f resultPoint = GraphicConveyor.vertexToVector2f(transformedVertex, width, height);
                 resultPoints.add(resultPoint);
 
-                Vector2f texCoord = mesh.textureVertices.get(mesh.polygons.get(polygonInd).getTextureVertexIndices().get(vertexInPolygonInd));
+                Vector2f texCoord = mesh.textureVertices.get(polygon.getTextureVertexIndices().get(i));
                 textureCoords.add(texCoord);
             }
 
-            for (int i = 0; i < nVerticesInPolygon - 2; i++) {
+            for (int i = 0; i < resultPoints.size() - 2; i++) {
                 Vector2f v1 = resultPoints.get(0);
                 Vector2f v2 = resultPoints.get(i + 1);
                 Vector2f v3 = resultPoints.get(i + 2);
@@ -112,7 +112,7 @@ public class RenderEngine {
                 Vector2f t3 = textureCoords.get(i + 2);
 
                 rasterizeTriangle(
-                        graphicsContext,
+                        gc,
                         v1, v2, v3,
                         v1_3d, v2_3d, v3_3d,
                         zBuffer,
@@ -122,7 +122,7 @@ public class RenderEngine {
                         vertexNormals,
                         camera,
                         fillColor,
-                        useLighting // Передаем состояние освещения
+                        useLighting
                 );
             }
         }

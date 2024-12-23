@@ -19,7 +19,8 @@ public class ZBuffer {
 
     public static boolean testBuffer(int x, int y, float depth, List<List<Float>> zBuffer) {
         if (x >= 0 && x < zBuffer.size() && y >= 0 && y < zBuffer.get(0).size()) {
-            if (depth < zBuffer.get(x).get(y)) {
+            float currentDepth = zBuffer.get(x).get(y);
+            if (depth < currentDepth) {
                 zBuffer.get(x).set(y, depth);
                 return true;
             }

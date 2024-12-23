@@ -86,6 +86,48 @@ public class GuiController {
     /////////
 
     @FXML
+    private void render() {
+        double width = canvas.getWidth();
+        double height = canvas.getHeight();
+
+        canvas.getGraphicsContext2D().clearRect(0, 0, width, height);
+
+        // Получаем активную камеру из CameraManager
+        Camera activeCamera = cameraManager.getActiveCamera();
+        if (activeCamera != null) {
+            activeCamera.setAspectRatio((float) (width / height));
+
+            // Передача цветов и параметров трансформации
+            Color modelColor = modelColorPicker.getValue();
+            Color backgroundColor = backgroundColorPicker.getValue();
+
+            // Рендеринг всех моделей
+            for (Model model : models) {
+                // Получаем цвет текстуры или используем цвет по умолчанию
+                Color fillColor = texture == null ? Color.GREEN : getTextureColor(texture);
+
+                RenderEngine.render(
+                        canvas.getGraphicsContext2D(),
+                        activeCamera, // Используем активную камеру
+                        model,
+                        (int) width,
+                        (int) height,
+                        selectedVertices,
+                        modelColor,
+                        backgroundColor,
+                        isRasterizationEnabled, // Передаем состояние растеризации
+                        useTextureCheckBox.isSelected() ? texture : null, // Передаем текстура, если она включена
+                        fillColor, // Передаем цвет
+                        drawWireframeCheckBox.isSelected(), // Передаем состояние режима полигональной сетки
+                        useLightingCheckBox.isSelected() // Передаем состояние режима освещения
+                );
+            }
+        } else {
+            System.out.println("Нет активной камеры для рендеринга");
+        }
+    }
+
+    @FXML
     private void initialize() {
         // Устанавливаем фокус на Canvas
         canvas.setFocusTraversable(true);
@@ -129,11 +171,18 @@ public class GuiController {
         updateCameraComboBox(); // Обновляем ComboBox
         updateActiveCameraLabel();
 
+        // Привязка обработчика события для useTextureCheckBox
+        useTextureCheckBox.setOnAction(event -> {
+            boolean useTexture = useTextureCheckBox.isSelected(); // Получаем состояние чекбокса
+            System.out.println("Текстура " + (useTexture ? "включена" : "отключена"));
+            timeline.playFromStart(); // Перерисовываем сцену с учетом нового состояния текстуры
+        });
+
         // Инициализация таймлайна для рендеринга
         timeline = new Timeline();
         timeline.setCycleCount(Animation.INDEFINITE);
 
-        KeyFrame frame = new KeyFrame(Duration.millis(15), event -> {
+        KeyFrame frame = new KeyFrame(Duration.millis(33), event -> {
             double width = canvas.getWidth();
             double height = canvas.getHeight();
 
@@ -147,6 +196,7 @@ public class GuiController {
                 // Передача цветов и параметров трансформации
                 Color modelColor = modelColorPicker.getValue();
                 Color backgroundColor = backgroundColorPicker.getValue();
+                Color texColor = getTextureColor(texture); // Метод, который возвращает цвет текстуры
 
                 // Рендеринг всех моделей
                 for (Model model : models) {
@@ -161,7 +211,7 @@ public class GuiController {
                             backgroundColor,
                             isRasterizationEnabled,
                             texture,
-                            texture == null ? Color.LIGHTGRAY : null, // Передаем цвет только если текстура не задана
+                            texture == null ? Color.LIGHTGRAY : texColor, // Передаем цвет только если текстура не задана
                             drawWireframeCheckBox.isSelected(), // Передаем состояние режима полигональной сетки
                             useLightingCheckBox.isSelected() // Передаем состояние режима освещения
                     );
@@ -169,6 +219,7 @@ public class GuiController {
             } else {
                 System.out.println("Нет активной камеры для рендеринга");
             }
+            render(); // Вызов метода render() для обновления сцены
         });
 
         timeline.getKeyFrames().add(frame);
@@ -198,13 +249,27 @@ public class GuiController {
 
         useTextureCheckBox.setOnAction(this::handleUseTexture);
         useLightingCheckBox.setOnAction(this::handleUseLighting);
+
+        // Привязка обработчика события для useTextureCheckBox
+        useTextureCheckBox.setOnAction(event -> render());
+
+        // Привязка обработчика события для drawWireframeCheckBox
+        drawWireframeCheckBox.setOnAction(event -> render());
+
+        // Привязка обработчика события для useLightingCheckBox
+        useLightingCheckBox.setOnAction(event -> render());
+
+        // Привязка обработчика события для других элементов управления
+        modelColorPicker.setOnAction(event -> render());
+        backgroundColorPicker.setOnAction(event -> render());
     }
 
-    private void handleDrawWireframe(ActionEvent event) {
-        boolean isWireframeEnabled = drawWireframeCheckBox.isSelected();
-        System.out.println("Wireframe mode: " + (isWireframeEnabled ? "Enabled" : "Disabled"));
-        // Пример: перерисовка сцены с учетом нового режима
-        timeline.playFromStart();
+    private Color getTextureColor(Image texture) {
+        if (texture == null) {
+            return Color.LIGHTGRAY; // Цвет по умолчанию, если текстура не задана
+        }
+        // Пример: возвращаем цвет текстуры (например, первый пиксель текстуры)
+        return texture.getPixelReader().getColor(0, 0);
     }
 
     @FXML
@@ -214,11 +279,11 @@ public class GuiController {
         timeline.playFromStart(); // Перерисовываем сцену с учетом нового состояния текстуры
     }
 
+    @FXML
     private void handleUseLighting(ActionEvent event) {
         boolean isLightingEnabled = useLightingCheckBox.isSelected();
         System.out.println("Lighting mode: " + (isLightingEnabled ? "Enabled" : "Disabled"));
-        // Пример: перерисовка сцены с учетом нового режима
-        timeline.playFromStart();
+        timeline.playFromStart(); // Перерисовываем сцену с учетом нового режима
     }
 
     // Метод для обновления ComboBox
@@ -772,7 +837,6 @@ public class GuiController {
         canvas.getGraphicsContext2D().setStroke(color);
     }
 
-    // Метод для изменения цвета фона
     @FXML
     private void handleBackgroundColorChange(ActionEvent event) {
         Color color = backgroundColorPicker.getValue();
@@ -780,21 +844,18 @@ public class GuiController {
         canvas.getGraphicsContext2D().fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
     }
 
-    // Метод для переключения на светлую тему
     @FXML
     private void handleLightTheme(ActionEvent event) {
         modelColorPicker.setValue(Color.BLACK);
         backgroundColorPicker.setValue(Color.WHITE);
     }
 
-    // Метод для переключения на тёмную тему
     @FXML
     private void handleDarkTheme(ActionEvent event) {
         modelColorPicker.setValue(Color.LIGHTGRAY);
         backgroundColorPicker.setValue(Color.rgb(64, 64, 64));
     }
 
-    // Метод для применения трансформаций
     @FXML
     private void handleApplyTransformations(ActionEvent event) {
         if (activeModelIndex == -1) return;
@@ -823,10 +884,6 @@ public class GuiController {
             System.out.println("Ошибка: введите корректные числа для трансформации.");
         }
     }
-
-
-    // Новые методы для управления триангуляцией и растеризацией
-
     private boolean isTriangulationApplied = false; // Флаг для проверки, была ли уже применена триангуляция
     private Model originalModel; // Переменная для хранения оригинальной модели
     @FXML
@@ -889,20 +946,9 @@ public class GuiController {
         if (file != null) {
             texture = new Image(file.toURI().toString());
             System.out.println("Загруженная текстура: " + file.getName());
+            render(); // Перерисовываем сцену с новой текстурой
         }
     }
-
-
-
-
-    @FXML
-    private Button addCameraButton;
-
-    @FXML
-    private Button removeCameraButton;
-
-    @FXML
-    private Button switchCameraButton;
 
     @FXML
     private Label activeCameraLabel;
