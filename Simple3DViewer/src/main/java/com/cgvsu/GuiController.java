@@ -1,5 +1,6 @@
 package com.cgvsu;
 
+import com.cgvsu.math.Vector2f;
 import com.cgvsu.math.Vector3f;
 import com.cgvsu.math.Vector4f;
 import com.cgvsu.math.matrix.Matrix4f;
@@ -272,13 +273,13 @@ public class GuiController {
             Vector3f vertex = activeModel.vertices.get(i);
 
             Vector4f vertexVecmath = new Vector4f(vertex.getX(), vertex.getY(), vertex.getZ(), 1);
-            Point2f screenPoint = GraphicConveyor.Vector2f(
+            Vector2f screenPoint = GraphicConveyor.vertexToPoint(
                     Matrix4f.multiply(modelViewProjectionMatrix, vertexVecmath).normalizeTo3f(),
                     (int) canvas.getWidth(),
                     (int) canvas.getHeight()
             );
 
-            double distance = Math.sqrt(Math.pow(screenPoint.x - mouseX, 2) + Math.pow(screenPoint.y - mouseY, 2));
+            double distance = Math.sqrt(Math.pow(screenPoint.getX() - mouseX, 2) + Math.pow(screenPoint.getY() - mouseY, 2));
 
             if (distance < minDistance) {
                 minDistance = distance;

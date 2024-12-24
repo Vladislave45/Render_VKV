@@ -1,5 +1,6 @@
 package com.cgvsu.render_engine;
 
+import com.cgvsu.math.Vector2f;
 import com.cgvsu.math.matrix.Matrix4f;
 import com.cgvsu.math.Vector3f;
 
@@ -124,7 +125,7 @@ public class GraphicConveyor {
         return result;
     }
 
-    public static Point2f Vector2f(final Vector3f vertex, final int width, final int height) {
-        return new Point2f(vertex.getX() * width + width / 2.0F, -vertex.getY() * height + height / 2.0F);
+    public static Vector2f vertexToPoint(final Vector3f vertex, final int width, final int height) {
+        return new Vector2f(vertex.getX() * width + width / 2.0F, -vertex.getY() * height + height / 2.0F);
     }
 }
