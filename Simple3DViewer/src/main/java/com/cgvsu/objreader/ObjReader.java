@@ -128,34 +128,37 @@ public class ObjReader {
 				throw new ObjReaderException("Too much vertex arguments.", lineInd);
 			}
 
-			return new Vector3f(
-					Float.parseFloat(wordsInLineWithoutToken.get(0)),
-					Float.parseFloat(wordsInLineWithoutToken.get(1)),
-					Float.parseFloat(wordsInLineWithoutToken.get(2)));
+			float x = Float.parseFloat(wordsInLineWithoutToken.get(0));
+			float y = Float.parseFloat(wordsInLineWithoutToken.get(1));
+			float z = (wordsInLineWithoutToken.size() > 2) ? Float.parseFloat(wordsInLineWithoutToken.get(2)) : 0.0f;
 
-		} catch(NumberFormatException e) {
+			return new Vector3f(x, y, z);
+
+		} catch (NumberFormatException e) {
 			throw new ObjReaderException("Failed to parse float value.", lineInd);
-
-		} catch(IndexOutOfBoundsException e) {
+		} catch (IndexOutOfBoundsException e) {
 			throw new ObjReaderException("Too few vertex arguments.", lineInd);
 		}
 	}
 
 	// Метод для парсинга текстурных вершин
-	protected static Vector2f parseTextureVertex(final ArrayList<String> wordsInLineWithoutToken, int lineInd) {
+	protected static Vector2f parseTextureVertex(ArrayList<String> wordsInLineWithoutToken, int lineInd) {
 		try {
 			if (wordsInLineWithoutToken.size() > 2) {
-				throw new ObjReaderException("Too much texture vertex arguments.", lineInd);
+				// Если чисел больше двух, игнорируем лишние
+				System.out.println("Warning: Too much texture vertex arguments in line " + lineInd + ". Extra values will be ignored.");
+				wordsInLineWithoutToken = new ArrayList<>(wordsInLineWithoutToken.subList(0, 2));
 			}
-			return new Vector2f(
-					Float.parseFloat(wordsInLineWithoutToken.get(0)),
-					Float.parseFloat(wordsInLineWithoutToken.get(1)));
 
-		} catch(NumberFormatException e) {
-			throw new ObjReaderException("Failed to parse float value.", lineInd);
+			float u = Float.parseFloat(wordsInLineWithoutToken.get(0));
+			float v = (wordsInLineWithoutToken.size() > 1) ? Float.parseFloat(wordsInLineWithoutToken.get(1)) : 0.0f;
 
-		} catch(IndexOutOfBoundsException e) {
-			throw new ObjReaderException("Too few texture vertex arguments.", lineInd);
+			return new Vector2f(u, v);
+
+		} catch (NumberFormatException e) {
+			throw new ObjReaderException("Failed to parse float value in line: " + lineInd, lineInd);
+		} catch (IndexOutOfBoundsException e) {
+			throw new ObjReaderException("Too few texture vertex arguments in line: " + lineInd, lineInd);
 		}
 	}
 
@@ -221,20 +224,21 @@ public class ObjReader {
 				}
 				case 3 -> {
 					onePolygonVertexIndices.add(Integer.parseInt(wordIndices[0]) - 1);
-					onePolygonNormalIndices.add(Integer.parseInt(wordIndices[2]) - 1);
-					if (!wordIndices[1].equals("")) {
+					if (!wordIndices[1].isEmpty()) {
 						onePolygonTextureVertexIndices.add(Integer.parseInt(wordIndices[1]) - 1);
+					} else {
+						onePolygonTextureVertexIndices.add(0);
 					}
+					onePolygonNormalIndices.add(Integer.parseInt(wordIndices[2]) - 1);
 				}
 				default -> {
 					throw new ObjReaderException("Invalid element size.", lineInd);
 				}
 			}
 
-		} catch(NumberFormatException e) {
+		} catch (NumberFormatException e) {
 			throw new ObjReaderException("Failed to parse int value.", lineInd);
-
-		} catch(IndexOutOfBoundsException e) {
+		} catch (IndexOutOfBoundsException e) {
 			throw new ObjReaderException("Too few arguments.", lineInd);
 		}
 	}
