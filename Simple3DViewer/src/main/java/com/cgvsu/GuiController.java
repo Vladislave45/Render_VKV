@@ -133,6 +133,39 @@ public class GuiController {
         canvas.setFocusTraversable(true);
         canvas.requestFocus();
 
+        canvas.setOnMouseClicked(event -> canvas.requestFocus());
+
+        canvas.setOnKeyPressed(event -> {
+            switch (event.getCode()) {
+                case W -> handleCameraForward(null);
+                case A -> handleCameraLeft(null);
+                case S -> handleCameraBackward(null);
+                case D -> handleCameraRight(null);
+            }
+        });
+
+        // Привязка обработчиков событий для CheckBox-элементов внутри панели Rendering modes
+        drawWireframeCheckBox.setOnAction(event -> {
+            boolean isWireframeEnabled = drawWireframeCheckBox.isSelected();
+            System.out.println("Wireframe mode: " + (isWireframeEnabled ? "Enabled" : "Disabled"));
+            canvas.requestFocus(); // Возвращаем фокус на Canvas
+            render(); // Перерисовываем сцену
+        });
+
+        useTextureCheckBox.setOnAction(event -> {
+            boolean isTextureEnabled = useTextureCheckBox.isSelected();
+            System.out.println("Texture mode: " + (isTextureEnabled ? "Enabled" : "Disabled"));
+            canvas.requestFocus(); // Возвращаем фокус на Canvas
+            render(); // Перерисовываем сцену
+        });
+
+        useLightingCheckBox.setOnAction(event -> {
+            boolean isLightingEnabled = useLightingCheckBox.isSelected();
+            System.out.println("Lighting mode: " + (isLightingEnabled ? "Enabled" : "Disabled"));
+            canvas.requestFocus(); // Возвращаем фокус на Canvas
+            render(); // Перерисовываем сцену
+        });
+
         // Инициализация цветов и тем
         modelColorPicker.setValue(Color.BLACK);
         backgroundColorPicker.setValue(Color.WHITE);
@@ -170,13 +203,6 @@ public class GuiController {
         )); // Добавляем начальную камеру
         updateCameraComboBox(); // Обновляем ComboBox
         updateActiveCameraLabel();
-
-        // Привязка обработчика события для useTextureCheckBox
-        useTextureCheckBox.setOnAction(event -> {
-            boolean useTexture = useTextureCheckBox.isSelected(); // Получаем состояние чекбокса
-            System.out.println("Текстура " + (useTexture ? "включена" : "отключена"));
-            timeline.playFromStart(); // Перерисовываем сцену с учетом нового состояния текстуры
-        });
 
         // Инициализация таймлайна для рендеринга
         timeline = new Timeline();
@@ -231,37 +257,27 @@ public class GuiController {
         canvas.setOnMouseReleased(event -> handleMouseReleased(event));
         canvas.setOnScroll(event -> handleMouseScrolled(event)); // колесо
 
-        // Обработка событий клавиатуры
+        // Привязка обработчиков событий для клавиатуры
         canvas.setOnKeyPressed(event -> handleKeyPressed(event));
         canvas.setOnKeyReleased(event -> handleKeyReleased(event));
+
+        // Привязка обработчиков событий для панели Rendering modes
+        renderingModesPane.setOnMouseClicked(event -> canvas.requestFocus());
 
         // Установка начальных значений
         drawWireframeCheckBox.setSelected(true);
         useTextureCheckBox.setSelected(false);
         useLightingCheckBox.setSelected(true);
 
-        // Подключение обработчиков событий
-        drawWireframeCheckBox.setOnAction(event -> {
-            boolean isWireframeEnabled = drawWireframeCheckBox.isSelected();
-            System.out.println("Wireframe mode: " + (isWireframeEnabled ? "Enabled" : "Disabled"));
-            timeline.playFromStart(); // Перерисовываем сцену
-        });
-
         useTextureCheckBox.setOnAction(this::handleUseTexture);
         useLightingCheckBox.setOnAction(this::handleUseLighting);
-
-        // Привязка обработчика события для useTextureCheckBox
-        useTextureCheckBox.setOnAction(event -> render());
-
-        // Привязка обработчика события для drawWireframeCheckBox
-        drawWireframeCheckBox.setOnAction(event -> render());
-
-        // Привязка обработчика события для useLightingCheckBox
-        useLightingCheckBox.setOnAction(event -> render());
 
         // Привязка обработчика события для других элементов управления
         modelColorPicker.setOnAction(event -> render());
         backgroundColorPicker.setOnAction(event -> render());
+
+        // Устанавливаем обработчик клика на AnchorPane, чтобы возвращать фокус на Canvas
+        anchorPane.setOnMouseClicked(event -> canvas.requestFocus());
     }
 
     private Color getTextureColor(Image texture) {
@@ -273,10 +289,19 @@ public class GuiController {
     }
 
     @FXML
+    private void handleDrawWireframe(ActionEvent event) {
+        boolean isWireframeEnabled = drawWireframeCheckBox.isSelected();
+        System.out.println("Wireframe mode: " + (isWireframeEnabled ? "Enabled" : "Disabled"));
+        timeline.playFromStart(); // Перерисовываем сцену
+        canvas.requestFocus(); // Устанавливаем фокус на Canvas
+    }
+
+    @FXML
     private void handleUseTexture(ActionEvent event) {
         boolean isTextureEnabled = useTextureCheckBox.isSelected();
         System.out.println("Texture mode: " + (isTextureEnabled ? "Enabled" : "Disabled"));
-        timeline.playFromStart(); // Перерисовываем сцену с учетом нового состояния текстуры
+        render(); // Перерисовываем сцену с учетом нового состояния текстуры
+        canvas.requestFocus(); // Устанавливаем фокус на Canvas
     }
 
     @FXML
@@ -284,6 +309,7 @@ public class GuiController {
         boolean isLightingEnabled = useLightingCheckBox.isSelected();
         System.out.println("Lighting mode: " + (isLightingEnabled ? "Enabled" : "Disabled"));
         timeline.playFromStart(); // Перерисовываем сцену с учетом нового режима
+        canvas.requestFocus(); // Устанавливаем фокус на Canvas
     }
 
     // Метод для обновления ComboBox
@@ -300,6 +326,29 @@ public class GuiController {
         if (event.getCode() == KeyCode.SHIFT) {
             // Если отпущена клавиша SHIFT, сохраняем выделенные вершины
             // (ничего не делаем, так как выделение уже сохранено)
+        }
+    }
+
+    // Обработка нажатия клавиш
+    private void handleKeyPressed(KeyEvent event) {
+        Camera activeCamera = cameraManager.getActiveCamera();
+        if (activeCamera == null) {
+            System.out.println("Нет активной камеры для управления");
+            return;
+        }
+
+        switch (event.getCode()) {
+            case W -> activeCamera.movePosition(new Vector3f(0, 0, -TRANSLATION));
+            case S -> activeCamera.movePosition(new Vector3f(0, 0, TRANSLATION));
+            case A -> activeCamera.movePositionAndTarget(new Vector3f(TRANSLATION, 0, 0));
+            case D -> activeCamera.movePositionAndTarget(new Vector3f(-TRANSLATION, 0, 0));
+            case DELETE -> {
+                if (activeModelIndex != -1) {
+                    Model activeModel = models.get(activeModelIndex);
+                    activeModel.removeVertices(selectedVertices);
+                    selectedVertices.clear();
+                }
+            }
         }
     }
 
@@ -421,29 +470,6 @@ public class GuiController {
         return closestVertexIndex;
     }
 
-    // Обработка нажатия клавиш
-    private void handleKeyPressed(KeyEvent event) {
-        Camera activeCamera = cameraManager.getActiveCamera();
-        if (activeCamera == null) {
-            System.out.println("Нет активной камеры для управления");
-            return;
-        }
-
-        switch (event.getCode()) {
-            case W -> activeCamera.movePosition(new Vector3f(0, 0, -TRANSLATION));
-            case S -> activeCamera.movePosition(new Vector3f(0, 0, TRANSLATION));
-            case A -> activeCamera.movePositionAndTarget(new Vector3f(TRANSLATION, 0, 0));
-            case D -> activeCamera.movePositionAndTarget(new Vector3f(-TRANSLATION, 0, 0));
-            case DELETE -> {
-                if (activeModelIndex != -1) {
-                    Model activeModel = models.get(activeModelIndex);
-                    activeModel.removeVertices(selectedVertices);
-                    selectedVertices.clear();
-                }
-            }
-        }
-    }
-
     // Установка активной модели
     private void setActiveModel(int index) {
         if (index >= 0 && index < models.size()) {
@@ -547,23 +573,27 @@ public class GuiController {
 
     // Управление камерой
     @FXML
-    public void handleCameraForward(ActionEvent actionEvent) { // W
+    public void handleCameraForward(ActionEvent actionEvent) {
         camera.movePosition(new Vector3f(0, 0, -TRANSLATION));
+        render(); // Перерисовываем сцену
     }
 
     @FXML
-    public void handleCameraBackward(ActionEvent actionEvent) { // S
+    public void handleCameraBackward(ActionEvent actionEvent) {
         camera.movePosition(new Vector3f(0, 0, TRANSLATION));
+        render(); // Перерисовываем сцену
     }
 
     @FXML
-    public void handleCameraLeft(ActionEvent actionEvent) { // A
+    public void handleCameraLeft(ActionEvent actionEvent) {
         camera.movePositionAndTarget(new Vector3f(TRANSLATION, 0, 0));
+        render(); // Перерисовываем сцену
     }
 
     @FXML
-    public void handleCameraRight(ActionEvent actionEvent) { // D
+    public void handleCameraRight(ActionEvent actionEvent) {
         camera.movePositionAndTarget(new Vector3f(-TRANSLATION, 0, 0));
+        render(); // Перерисовываем сцену
     }
 
     // Трансформации модели
@@ -1005,6 +1035,9 @@ public class GuiController {
             canvas.requestFocus();
         }
     }
+
+    @FXML
+    private TitledPane renderingModesPane; // Объявляем переменную для панели Rendering modes
 
     @FXML
     private CheckBox drawWireframeCheckBox;
