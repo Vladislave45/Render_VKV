@@ -333,6 +333,8 @@ public class GuiController {
             models.add(newModel);
             updateModelList();
             setActiveModel(models.size() - 1);
+
+            updateTransformFields(newModel);
         } catch (IOException e) {
             showErrorDialog("Ошибка загрузки файла", "Не удалось прочитать файл: " + e.getMessage());
         } catch (ObjReaderException e) {
@@ -353,6 +355,8 @@ public class GuiController {
             models.remove(activeModelIndex);
             updateModelList();
             setActiveModel(-1);
+
+            updateTransformFields(null);
         } else {
             System.out.println("Нет активной модели для удаления");
         }
