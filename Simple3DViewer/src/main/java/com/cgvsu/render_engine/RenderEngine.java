@@ -32,9 +32,9 @@ public class RenderEngine {
             final Color backgroundColor,
             final boolean isRasterizationEnabled, // Состояние растеризации
             final Image texture, // Текстура
-            Color fillColor,
+            final Color fillColor,
             final boolean isWireframeEnabled,
-            final boolean useLighting // Состояние освещения
+            final boolean useLighting
     ) {
         graphicsContext.setStroke(modelColor);
         graphicsContext.setFill(backgroundColor);
@@ -50,17 +50,14 @@ public class RenderEngine {
         Matrix4f modelViewProjectionMatrix = Matrix4f.multiply(projectionMatrix, Matrix4f.multiply(viewMatrix, modelMatrix));
 
         if (isRasterizationEnabled) {
-            // Если растеризация включена, окрашиваем модель в зеленый цвет
-            renderWithRasterization(graphicsContext, camera, mesh, width, height, modelViewProjectionMatrix, texture, Color.GREEN, useLighting);
+            renderWithRasterization(graphicsContext, camera, mesh, width, height, modelViewProjectionMatrix, texture, fillColor, useLighting);
         }
 
         if (isWireframeEnabled) {
-            // Если включена полигональная сетка, рисуем её
             renderWithoutRasterization(graphicsContext, mesh, width, height, modelViewProjectionMatrix, selectedVertices);
         }
 
         if (!selectedVertices.isEmpty()) {
-            // Выделение выбранных вершин
             highlightSelectedVertices(graphicsContext, mesh, modelViewProjectionMatrix, width, height, selectedVertices);
         }
     }
@@ -72,7 +69,7 @@ public class RenderEngine {
             int width,
             int height,
             Matrix4f modelViewProjectionMatrix,
-            Image texture,
+            Image texture, // Текстура
             Color fillColor,
             boolean useLighting
     ) {
@@ -117,7 +114,7 @@ public class RenderEngine {
                         v1_3d, v2_3d, v3_3d,
                         zBuffer,
                         width, height,
-                        texture,
+                        texture, // Передаем текстура, если она включена
                         t1, t2, t3,
                         vertexNormals,
                         camera,
