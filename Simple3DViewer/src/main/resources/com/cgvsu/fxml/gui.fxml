@@ -161,7 +161,7 @@
 
     <Accordion AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0">
         <panes>
-            <!-- Вкладка для цветовых настроек -->
+
             <TitledPane text="Color Settings">
                 <VBox spacing="5" prefWidth="250">
                     <Label text="Color:"/>
@@ -182,12 +182,12 @@
                 </VBox>
             </TitledPane>
 
-            <!-- Вкладка для трансформаций -->
+
             <TitledPane text="Transform Settings">
                 <VBox spacing="10" prefWidth="250">
                     <Label text="Transform model:"/>
 
-                    <!-- Группа для ввода значений трансформаций -->
+
                     <HBox spacing="10">
                         <VBox spacing="5">
                             <Label text="Scale X:"/>
@@ -215,8 +215,10 @@
                         </VBox>
                     </HBox>
 
-                    <!-- Кнопка для применения трансформаций -->
+
                     <Button text="Apply Transformations" onAction="#handleApplyTransformations"/>
+
+                    <Label text="Step for change:"/>
 
                     <!-- Заголовки -->
                     <HBox spacing="15">
