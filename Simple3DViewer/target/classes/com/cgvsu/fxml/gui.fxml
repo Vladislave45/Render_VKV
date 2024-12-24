@@ -264,7 +264,7 @@
 
 
             <!-- Кнопки отрисовки модели -->
-            <TitledPane text="Rendering modes">
+            <TitledPane text="Rendering modes" fx:id="renderingModesPane">
                 <VBox>
                     <CheckBox fx:id="drawWireframeCheckBox" text="Рисовать полигональную сетку" />
                     <CheckBox fx:id="useTextureCheckBox" text="Использовать текстуру" />
