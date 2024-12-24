@@ -149,6 +149,38 @@ public class GuiController {
         canvas.setOnKeyReleased(event -> handleKeyReleased(event));
     }
 
+    private void updateTransformFields(Model model) {
+        if (model != null) {
+            // Обновляем текстовые поля для масштабирования
+            scaleXField.setText(String.valueOf(model.getScale().getX()));
+            scaleYField.setText(String.valueOf(model.getScale().getY()));
+            scaleZField.setText(String.valueOf(model.getScale().getZ()));
+
+            // Обновляем текстовые поля для вращения
+            rotateXField.setText(String.valueOf(model.getRotation().getX()));
+            rotateYField.setText(String.valueOf(model.getRotation().getY()));
+            rotateZField.setText(String.valueOf(model.getRotation().getZ()));
+
+            // Обновляем текстовые поля для перемещения
+            translateXField.setText(String.valueOf(model.getTranslation().getX()));
+            translateYField.setText(String.valueOf(model.getTranslation().getY()));
+            translateZField.setText(String.valueOf(model.getTranslation().getZ()));
+        } else {
+            // Если модель не выбрана, очищаем текстовые поля
+            scaleXField.clear();
+            scaleYField.clear();
+            scaleZField.clear();
+
+            rotateXField.clear();
+            rotateYField.clear();
+            rotateZField.clear();
+
+            translateXField.clear();
+            translateYField.clear();
+            translateZField.clear();
+        }
+    }
+
     private void handleKeyReleased(KeyEvent event) {
         if (event.getCode() == KeyCode.SHIFT) {
         }
@@ -270,7 +302,11 @@ public class GuiController {
     private void setActiveModel(int index) {
         if (index >= 0 && index < models.size()) {
             activeModelIndex = index;
-            System.out.println("Активная модель: " + models.get(index).getName());
+            Model activeModel = models.get(activeModelIndex);
+
+            updateTransformFields(activeModel);
+
+            System.out.println("Активная модель: " + activeModel.getName());
         } else {
             activeModelIndex = -1;
             System.out.println("Нет активной модели");
@@ -428,6 +464,8 @@ public class GuiController {
             Model activeModel = models.get(activeModelIndex);
             Vector3f scale = activeModel.getScale();
             activeModel.setScale(new Vector3f(scale.getX() + SCALE, scale.getY(), scale.getZ()));
+            updateTransformFields(activeModel);
+
         } else {
             System.out.println("Нет активной модели для трансформации");
         }
@@ -439,6 +477,8 @@ public class GuiController {
             Model activeModel = models.get(activeModelIndex);
             Vector3f scale = activeModel.getScale();
             activeModel.setScale(new Vector3f(scale.getX() - SCALE, scale.getY(), scale.getZ()));
+            updateTransformFields(activeModel);
+
         } else {
             System.out.println("Нет активной модели для трансформации");
         }
@@ -450,6 +490,8 @@ public class GuiController {
             Model activeModel = models.get(activeModelIndex);
             Vector3f scale = activeModel.getScale();
             activeModel.setScale(new Vector3f(scale.getX(), scale.getY() + SCALE, scale.getZ()));
+            updateTransformFields(activeModel);
+
         } else {
             System.out.println("Нет активной модели для трансформации");
         }
@@ -461,6 +503,8 @@ public class GuiController {
             Model activeModel = models.get(activeModelIndex);
             Vector3f scale = activeModel.getScale();
             activeModel.setScale(new Vector3f(scale.getX(), scale.getY() - SCALE, scale.getZ()));
+            updateTransformFields(activeModel);
+
         } else {
             System.out.println("Нет активной модели для трансформации");
         }
@@ -472,6 +516,8 @@ public class GuiController {
             Model activeModel = models.get(activeModelIndex);
             Vector3f scale = activeModel.getScale();
             activeModel.setScale(new Vector3f(scale.getX(), scale.getY(), scale.getZ() + SCALE));
+            updateTransformFields(activeModel);
+
         } else {
             System.out.println("Нет активной модели для трансформации");
         }
@@ -483,6 +529,8 @@ public class GuiController {
             Model activeModel = models.get(activeModelIndex);
             Vector3f scale = activeModel.getScale();
             activeModel.setScale(new Vector3f(scale.getX(), scale.getY(), scale.getZ() - SCALE));
+            updateTransformFields(activeModel);
+
         } else {
             System.out.println("Нет активной модели для трансформации");
         }
@@ -494,6 +542,8 @@ public class GuiController {
             Model activeModel = models.get(activeModelIndex);
             Vector3f rotation = activeModel.getRotation();
             activeModel.setRotation(new Vector3f(rotation.getX() + ROTATION, rotation.getY(), rotation.getZ()));
+            updateTransformFields(activeModel);
+
         } else {
             System.out.println("Нет активной модели для трансформации");
         }
@@ -505,6 +555,8 @@ public class GuiController {
             Model activeModel = models.get(activeModelIndex);
             Vector3f rotation = activeModel.getRotation();
             activeModel.setRotation(new Vector3f(rotation.getX() - ROTATION, rotation.getY(), rotation.getZ()));
+            updateTransformFields(activeModel);
+
         } else {
             System.out.println("Нет активной модели для трансформации");
         }
@@ -516,6 +568,8 @@ public class GuiController {
             Model activeModel = models.get(activeModelIndex);
             Vector3f rotation = activeModel.getRotation();
             activeModel.setRotation(new Vector3f(rotation.getX(), rotation.getY() + ROTATION, rotation.getZ()));
+            updateTransformFields(activeModel);
+
         } else {
             System.out.println("Нет активной модели для трансформации");
         }
@@ -527,6 +581,8 @@ public class GuiController {
             Model activeModel = models.get(activeModelIndex);
             Vector3f rotation = activeModel.getRotation();
             activeModel.setRotation(new Vector3f(rotation.getX(), rotation.getY() - ROTATION, rotation.getZ()));
+            updateTransformFields(activeModel);
+
         } else {
             System.out.println("Нет активной модели для трансформации");
         }
@@ -538,6 +594,8 @@ public class GuiController {
             Model activeModel = models.get(activeModelIndex);
             Vector3f rotation = activeModel.getRotation();
             activeModel.setRotation(new Vector3f(rotation.getX(), rotation.getY(), rotation.getZ() + ROTATION));
+            updateTransformFields(activeModel);
+
         } else {
             System.out.println("Нет активной модели для трансформации");
         }
@@ -549,6 +607,8 @@ public class GuiController {
             Model activeModel = models.get(activeModelIndex);
             Vector3f rotation = activeModel.getRotation();
             activeModel.setRotation(new Vector3f(rotation.getX(), rotation.getY(), rotation.getZ() - ROTATION));
+            updateTransformFields(activeModel);
+
         } else {
             System.out.println("Нет активной модели для трансформации");
         }
@@ -560,6 +620,8 @@ public class GuiController {
             Model activeModel = models.get(activeModelIndex);
             Vector3f translation = activeModel.getTranslation();
             activeModel.setTranslation(new Vector3f(translation.getX() + TRANSLATION, translation.getY(), translation.getZ()));
+            updateTransformFields(activeModel);
+
         } else {
             System.out.println("Нет активной модели для трансформации");
         }
@@ -571,6 +633,8 @@ public class GuiController {
             Model activeModel = models.get(activeModelIndex);
             Vector3f translation = activeModel.getTranslation();
             activeModel.setTranslation(new Vector3f(translation.getX() - TRANSLATION, translation.getY(), translation.getZ()));
+            updateTransformFields(activeModel);
+
         } else {
             System.out.println("Нет активной модели для трансформации");
         }
@@ -582,6 +646,8 @@ public class GuiController {
             Model activeModel = models.get(activeModelIndex);
             Vector3f translation = activeModel.getTranslation();
             activeModel.setTranslation(new Vector3f(translation.getX(), translation.getY() + TRANSLATION, translation.getZ()));
+            updateTransformFields(activeModel);
+
         } else {
             System.out.println("Нет активной модели для трансформации");
         }
@@ -593,6 +659,8 @@ public class GuiController {
             Model activeModel = models.get(activeModelIndex);
             Vector3f translation = activeModel.getTranslation();
             activeModel.setTranslation(new Vector3f(translation.getX(), translation.getY() - TRANSLATION, translation.getZ()));
+            updateTransformFields(activeModel);
+
         } else {
             System.out.println("Нет активной модели для трансформации");
         }
@@ -604,6 +672,8 @@ public class GuiController {
             Model activeModel = models.get(activeModelIndex);
             Vector3f translation = activeModel.getTranslation();
             activeModel.setTranslation(new Vector3f(translation.getX(), translation.getY(), translation.getZ() + TRANSLATION));
+            updateTransformFields(activeModel);
+
         } else {
             System.out.println("Нет активной модели для трансформации");
         }
@@ -615,6 +685,8 @@ public class GuiController {
             Model activeModel = models.get(activeModelIndex);
             Vector3f translation = activeModel.getTranslation();
             activeModel.setTranslation(new Vector3f(translation.getX(), translation.getY(), translation.getZ() - TRANSLATION));
+            updateTransformFields(activeModel);
+
         } else {
             System.out.println("Нет активной модели для трансформации");
         }
