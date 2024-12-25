@@ -104,7 +104,7 @@ public class TriangleRasterization {
         }
     }
 
-    private static void rasterizeTriangle(
+    public static void rasterizeTriangle(
             GraphicsContext gc,
             Vector2f v1, Vector2f v2, Vector2f v3,
             Vector3f v1_3d, Vector3f v2_3d, Vector3f v3_3d,
@@ -189,12 +189,15 @@ public class TriangleRasterization {
         }
     }
 
+    private static float edgeFunction(Vector2f a, Vector2f b, Vector2f c) {
+        return (b.getX() - a.getX()) * (c.getY() - a.getY()) - (b.getY() - a.getY()) * (c.getX() - a.getX());
+    }
+
     private static float interpolateTexture(int x, int y, Vector2f v1, Vector2f v2, Vector2f v3, float t1, float t2, float t3) {
-        float w1 = ((v2.getY() - v3.getY()) * (x - v3.getX()) + (v3.getX() - v2.getX()) * (y - v3.getY())) /
-                ((v2.getY() - v3.getY()) * (v1.getX() - v3.getX()) + (v3.getX() - v2.getX()) * (v1.getY() - v3.getY()));
-        float w2 = ((v3.getY() - v1.getY()) * (x - v3.getX()) + (v1.getX() - v3.getX()) * (y - v3.getY())) /
-                ((v2.getY() - v3.getY()) * (v1.getX() - v3.getX()) + (v3.getX() - v2.getX()) * (v1.getY() - v3.getY()));
-        float w3 = 1 - w1 - w2;
+        float area = edgeFunction(v1, v2, v3);
+        float w1 = edgeFunction(new Vector2f(x, y), v2, v3) / area;
+        float w2 = edgeFunction(v1, new Vector2f(x, y), v3) / area;
+        float w3 = edgeFunction(v1, v2, new Vector2f(x, y)) / area;
 
         return w1 * t1 + w2 * t2 + w3 * t3;
     }
@@ -210,33 +213,21 @@ public class TriangleRasterization {
         return texture.getPixelReader().getColor(x, y);
     }
 
-    private static Color interpolateColor(Color c1, Color c2, float ratio) {
-        float r = (float) (c1.getRed() * (1 - ratio) + c2.getRed() * ratio);
-        float g = (float) (c1.getGreen() * (1 - ratio) + c2.getGreen() * ratio);
-        float b = (float) (c1.getBlue() * (1 - ratio) + c2.getBlue() * ratio);
-        float a = (float) (c1.getOpacity() * (1 - ratio) + c2.getOpacity() * ratio);
-
-        return new Color(r, g, b, a);
-    }
-
-    private static Color calculateLighting(Vector3f normal, Vector3f lightDirection, Color texColor) {
-        lightDirection = lightDirection.normalize(); // Нормализуем направление света
-
-        float dotProduct = normal.dot(lightDirection);
-        dotProduct = Math.max(0, dotProduct); // Ограничиваем значение от 0 до 1
-
+    private static Color calculateLighting(Vector3f normal, Vector3f lightPosition, Color baseColor) {
+        Vector3f lightDirection = Vector3f.deduct(lightPosition, normal).normalize();
+        float dot = Math.max(0, normal.dot(lightDirection));
         return new Color(
-                texColor.getRed() * dotProduct,
-                texColor.getGreen() * dotProduct,
-                texColor.getBlue() * dotProduct,
-                1.0
+                baseColor.getRed() * dot,
+                baseColor.getGreen() * dot,
+                baseColor.getBlue() * dot,
+                baseColor.getOpacity()
         );
     }
 
     private static boolean isPointInTriangle(int x, int y, Vector2f v1, Vector2f v2, Vector2f v3) {
-        float d1 = sign(x, y, v1, v2);
-        float d2 = sign(x, y, v2, v3);
-        float d3 = sign(x, y, v3, v1);
+        float d1 = edgeFunction(new Vector2f(x, y), v1, v2);
+        float d2 = edgeFunction(new Vector2f(x, y), v2, v3);
+        float d3 = edgeFunction(new Vector2f(x, y), v3, v1);
 
         boolean hasNeg = (d1 < 0) || (d2 < 0) || (d3 < 0);
         boolean hasPos = (d1 > 0) || (d2 > 0) || (d3 > 0);
@@ -249,30 +240,24 @@ public class TriangleRasterization {
     }
 
     private static float interpolateDepth(int x, int y, Vector2f v1, Vector2f v2, Vector2f v3, Vector3f v1_3d, Vector3f v2_3d, Vector3f v3_3d) {
-        float w1 = ((v2.getY() - v3.getY()) * (x - v3.getX()) + (v3.getX() - v2.getX()) * (y - v3.getY())) /
-                ((v2.getY() - v3.getY()) * (v1.getX() - v3.getX()) + (v3.getX() - v2.getX()) * (v1.getY() - v3.getY()));
-        float w2 = ((v3.getY() - v1.getY()) * (x - v3.getX()) + (v1.getX() - v3.getX()) * (y - v3.getY())) /
-                ((v2.getY() - v3.getY()) * (v1.getX() - v3.getX()) + (v3.getX() - v2.getX()) * (v1.getY() - v3.getY()));
-        float w3 = 1 - w1 - w2;
+        float area = edgeFunction(v1, v2, v3);
+        float w1 = edgeFunction(new Vector2f(x, y), v2, v3) / area;
+        float w2 = edgeFunction(v1, new Vector2f(x, y), v3) / area;
+        float w3 = edgeFunction(v1, v2, new Vector2f(x, y)) / area;
 
-        float depth = w1 * v1_3d.getZ() + w2 * v2_3d.getZ() + w3 * v3_3d.getZ();
-
-        return depth;
+        return w1 * v1_3d.getZ() + w2 * v2_3d.getZ() + w3 * v3_3d.getZ();
     }
 
     private static Vector3f interpolateNormal(int x, int y, Vector2f v1, Vector2f v2, Vector2f v3, Vector3f n1, Vector3f n2, Vector3f n3) {
-        float w1 = ((v2.getY() - v3.getY()) * (x - v3.getX()) + (v3.getX() - v2.getX()) * (y - v3.getY())) /
-                ((v2.getY() - v3.getY()) * (v1.getX() - v3.getX()) + (v3.getX() - v2.getX()) * (v1.getY() - v3.getY()));
-        float w2 = ((v3.getY() - v1.getY()) * (x - v3.getX()) + (v1.getX() - v3.getX()) * (y - v3.getY())) /
-                ((v2.getY() - v3.getY()) * (v1.getX() - v3.getX()) + (v3.getX() - v2.getX()) * (v1.getY() - v3.getY()));
-        float w3 = 1 - w1 - w2;
+        float area = edgeFunction(v1, v2, v3);
+        float w1 = edgeFunction(new Vector2f(x, y), v2, v3) / area;
+        float w2 = edgeFunction(v1, new Vector2f(x, y), v3) / area;
+        float w3 = edgeFunction(v1, v2, new Vector2f(x, y)) / area;
 
-        Vector3f interpolatedNormal = new Vector3f(
-                n1.getX() * w1 + n2.getX() * w2 + n3.getX() * w3,
-                n1.getY() * w1 + n2.getY() * w2 + n3.getY() * w3,
-                n1.getZ() * w1 + n2.getZ() * w2 + n3.getZ() * w3
+        return new Vector3f(
+                w1 * n1.getX() + w2 * n2.getX() + w3 * n3.getX(),
+                w1 * n1.getY() + w2 * n2.getY() + w3 * n3.getY(),
+                w1 * n1.getZ() + w2 * n2.getZ() + w3 * n3.getZ()
         );
-
-        return interpolatedNormal.normalize(); // Нормализуем интерполированную нормаль
     }
 }

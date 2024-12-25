@@ -30,11 +30,11 @@ public class RenderEngine {
             final List<Integer> selectedVertices,
             final Color modelColor,
             final Color backgroundColor,
-            final boolean isRasterizationEnabled, // Состояние растеризации
-            final Image texture, // Текстура
+            final boolean isRasterizationEnabled,
+            final Image texture,
             Color fillColor,
             final boolean isWireframeEnabled,
-            final boolean useLighting // Состояние освещения
+            final boolean useLighting
     ) {
         graphicsContext.setStroke(modelColor);
         graphicsContext.setFill(backgroundColor);
@@ -50,17 +50,14 @@ public class RenderEngine {
         Matrix4f modelViewProjectionMatrix = Matrix4f.multiply(projectionMatrix, Matrix4f.multiply(viewMatrix, modelMatrix));
 
         if (isRasterizationEnabled) {
-            // Если растеризация включена, окрашиваем модель в зеленый цвет
-            renderWithRasterization(graphicsContext, camera, mesh, width, height, modelViewProjectionMatrix, texture, Color.GREEN, useLighting);
+            renderWithRasterization(graphicsContext, camera, mesh, width, height, modelViewProjectionMatrix, texture, fillColor, useLighting);
         }
 
         if (isWireframeEnabled) {
-            // Если включена полигональная сетка, рисуем её
             renderWithoutRasterization(graphicsContext, mesh, width, height, modelViewProjectionMatrix, selectedVertices);
         }
 
         if (!selectedVertices.isEmpty()) {
-            // Выделение выбранных вершин
             highlightSelectedVertices(graphicsContext, mesh, modelViewProjectionMatrix, width, height, selectedVertices);
         }
     }
@@ -69,8 +66,7 @@ public class RenderEngine {
             GraphicsContext gc,
             Camera camera,
             Model mesh,
-            int width,
-            int height,
+            int width, int height,
             Matrix4f modelViewProjectionMatrix,
             Image texture,
             Color fillColor,
@@ -131,8 +127,7 @@ public class RenderEngine {
     private static void renderWithoutRasterization(
             GraphicsContext graphicsContext,
             Model mesh,
-            int width,
-            int height,
+            int width, int height,
             Matrix4f modelViewProjectionMatrix,
             List<Integer> selectedVertices
     ) {
@@ -231,59 +226,6 @@ public class RenderEngine {
         }
     }
 
-    private static void renderWithStaticColor(
-            GraphicsContext gc,
-            Model mesh,
-            int width,
-            int height,
-            Matrix4f modelViewProjectionMatrix,
-            Color fillColor,
-            boolean useLighting
-    ) {
-        List<List<Float>> zBuffer = ZBuffer.createZBuffer(width, height);
-        List<Vector3f> vertexNormals = NormalUtils.recalculateVertexNormals(mesh);
-
-        for (Polygon polygon : mesh.polygons) {
-            List<Vector2f> resultPoints = new ArrayList<>();
-            List<Vector3f> vertices3D = new ArrayList<>();
-
-            for (int i = 0; i < polygon.getVertexIndices().size(); i++) {
-                Vector3f vertex = mesh.vertices.get(polygon.getVertexIndices().get(i));
-                vertices3D.add(vertex);
-
-                Vector4f vertexVecmath = new Vector4f(vertex.getX(), vertex.getY(), vertex.getZ(), 1);
-                Vector3f transformedVertex = Matrix4f.multiply(modelViewProjectionMatrix, vertexVecmath).normalizeTo3f();
-
-                Vector2f resultPoint = GraphicConveyor.vertexToVector2f(transformedVertex, width, height);
-                resultPoints.add(resultPoint);
-            }
-
-            for (int i = 0; i < resultPoints.size() - 2; i++) {
-                Vector2f v1 = resultPoints.get(0);
-                Vector2f v2 = resultPoints.get(i + 1);
-                Vector2f v3 = resultPoints.get(i + 2);
-
-                Vector3f v1_3d = vertices3D.get(0);
-                Vector3f v2_3d = vertices3D.get(i + 1);
-                Vector3f v3_3d = vertices3D.get(i + 2);
-
-                rasterizeTriangle(
-                        gc,
-                        v1, v2, v3,
-                        v1_3d, v2_3d, v3_3d,
-                        zBuffer,
-                        width, height,
-                        null, // Нет текстуры
-                        null, null, null,
-                        vertexNormals,
-                        null, // Нет камеры
-                        fillColor, // Передаем статический цвет
-                        useLighting
-                );
-            }
-        }
-    }
-
     private static void rasterizeTriangle(
             GraphicsContext gc,
             Vector2f v1, Vector2f v2, Vector2f v3,
@@ -322,8 +264,7 @@ public class RenderEngine {
             GraphicsContext gc,
             Model mesh,
             Matrix4f modelViewProjectionMatrix,
-            int width,
-            int height,
+            int width, int height,
             List<Integer> selectedVertices
     ) {
         gc.setLineWidth(1);
