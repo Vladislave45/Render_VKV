@@ -9,11 +9,7 @@ import java.util.List;
 
 public class NormalUtils {
 
-    /**
-     * Пересчитывает нормали вершин на основе нормалей полигонов.
-     * @param model Модель, для которой нужно пересчитать нормали.
-     * @return Список нормалей вершин.
-     */
+    //Пересчитывает нормали вершин на основе нормалей полигонов.
     public static List<Vector3f> recalculateVertexNormals(Model model) {
         List<Vector3f> vertexNormals = new ArrayList<>();
         for (int i = 0; i < model.vertices.size(); i++) {
@@ -36,13 +32,8 @@ public class NormalUtils {
         return vertexNormals;
     }
 
-    /**
-     * Вычисляет нормаль полигона.
-     * @param polygon Полигон.
-     * @param vertices Список вершин модели.
-     * @return Нормаль полигона.
-     */
-    private static Vector3f computePolygonNormal(Polygon polygon, List<Vector3f> vertices) {
+    //Вычисляет нормаль полигона.
+    static Vector3f computePolygonNormal(Polygon polygon, List<Vector3f> vertices) {
         List<Integer> vertexIndices = polygon.getVertexIndices();
         if (vertexIndices.size() < 3) {
             throw new IllegalArgumentException("Polygon must have at least 3 vertices.");

@@ -51,17 +51,17 @@ public class GuiController {
     @FXML
     private Canvas canvas;
 
-    private boolean isTriangulationEnabled = false; // Флаг для триангуляции
-    private boolean isRasterizationEnabled = false; // Флаг для растеризации
+    private boolean isTriangulationEnabled = false;
+    private boolean isRasterizationEnabled = false;
 
     @FXML
-    private ListView<String> modelListView; // Список моделей
+    private ListView<String> modelListView;
 
     @FXML
     private Button removeVerticesButton; // Кнопка для удаления вершин
 
-    private ArrayList<Model> models = new ArrayList<>(); // Список моделей
-    private int activeModelIndex = -1; // Индекс активной модели
+    private ArrayList<Model> models = new ArrayList<>();
+    private int activeModelIndex = -1;
 
     @FXML
     private TextField translationStepField;
@@ -77,7 +77,6 @@ public class GuiController {
 
     private Timeline timeline;
 
-    // Переменные для выделения вершин
     private List<Integer> selectedVertices = new ArrayList<>();
 
     //////
@@ -93,34 +92,30 @@ public class GuiController {
 
         canvas.getGraphicsContext2D().clearRect(0, 0, width, height);
 
-        // Получаем активную камеру из CameraManager
         Camera activeCamera = cameraManager.getActiveCamera();
         if (activeCamera != null) {
             activeCamera.setAspectRatio((float) (width / height));
 
-            // Передача цветов и параметров трансформации
             Color modelColor = modelColorPicker.getValue();
             Color backgroundColor = backgroundColorPicker.getValue();
 
-            // Рендеринг всех моделей
             for (Model model : models) {
-                // Получаем цвет текстуры или используем цвет по умолчанию
                 Color fillColor = texture == null ? Color.GREEN : getTextureColor(texture);
 
                 RenderEngine.render(
                         canvas.getGraphicsContext2D(),
-                        activeCamera, // Используем активную камеру
+                        activeCamera,
                         model,
                         (int) width,
                         (int) height,
                         selectedVertices,
                         modelColor,
                         backgroundColor,
-                        isRasterizationEnabled, // Передаем состояние растеризации
-                        useTextureCheckBox.isSelected() ? texture : null, // Передаем текстура, если она включена
-                        fillColor, // Передаем цвет
-                        drawWireframeCheckBox.isSelected(), // Передаем состояние режима полигональной сетки
-                        useLightingCheckBox.isSelected() // Передаем состояние режима освещения
+                        isRasterizationEnabled,
+                        useTextureCheckBox.isSelected() ? texture : null,
+                        fillColor,
+                        drawWireframeCheckBox.isSelected(),
+                        useLightingCheckBox.isSelected()
                 );
             }
         } else {
@@ -144,26 +139,25 @@ public class GuiController {
             }
         });
 
-        // Привязка обработчиков событий для CheckBox-элементов внутри панели Rendering modes
         drawWireframeCheckBox.setOnAction(event -> {
             boolean isWireframeEnabled = drawWireframeCheckBox.isSelected();
             System.out.println("Wireframe mode: " + (isWireframeEnabled ? "Enabled" : "Disabled"));
-            canvas.requestFocus(); // Возвращаем фокус на Canvas
-            render(); // Перерисовываем сцену
+            canvas.requestFocus();
+            render();
         });
 
         useTextureCheckBox.setOnAction(event -> {
             boolean isTextureEnabled = useTextureCheckBox.isSelected();
             System.out.println("Texture mode: " + (isTextureEnabled ? "Enabled" : "Disabled"));
-            canvas.requestFocus(); // Возвращаем фокус на Canvas
-            render(); // Перерисовываем сцену
+            canvas.requestFocus();
+            render();
         });
 
         useLightingCheckBox.setOnAction(event -> {
             boolean isLightingEnabled = useLightingCheckBox.isSelected();
             System.out.println("Lighting mode: " + (isLightingEnabled ? "Enabled" : "Disabled"));
-            canvas.requestFocus(); // Возвращаем фокус на Canvas
-            render(); // Перерисовываем сцену
+            canvas.requestFocus();
+            render();
         });
 
         modelColorPicker.setValue(Color.BLACK);
@@ -183,11 +177,9 @@ public class GuiController {
         modelColorPicker.setValue(Color.BLACK);
         backgroundColorPicker.setValue(Color.WHITE);
 
-        // Привязка размеров холста к размерам панели
         anchorPane.prefWidthProperty().addListener((ov, oldValue, newValue) -> canvas.setWidth(newValue.doubleValue()));
         anchorPane.prefHeightProperty().addListener((ov, oldValue, newValue) -> canvas.setHeight(newValue.doubleValue()));
 
-        // Инициализация списка моделей
         modelListView.getSelectionModel().selectedIndexProperty().addListener((obs, oldVal, newVal) -> {
             setActiveModel(newVal.intValue());
         });
@@ -201,7 +193,6 @@ public class GuiController {
         updateCameraComboBox();
         updateActiveCameraLabel();
 
-        // Инициализация таймлайна для рендеринга
         timeline = new Timeline();
         timeline.setCycleCount(Animation.INDEFINITE);
 
@@ -211,21 +202,18 @@ public class GuiController {
 
             canvas.getGraphicsContext2D().clearRect(0, 0, width, height);
 
-            // Получаем активную камеру из CameraManager
             Camera activeCamera = cameraManager.getActiveCamera();
             if (activeCamera != null) {
                 activeCamera.setAspectRatio((float) (width / height));
 
-                // Передача цветов и параметров трансформации
                 Color modelColor = modelColorPicker.getValue();
                 Color backgroundColor = backgroundColorPicker.getValue();
-                Color texColor = getTextureColor(texture); // Метод, который возвращает цвет текстуры
+                Color texColor = getTextureColor(texture);
 
-                // Рендеринг всех моделей
                 for (Model model : models) {
                     RenderEngine.render(
                             canvas.getGraphicsContext2D(),
-                            activeCamera, // Используем активную камеру
+                            activeCamera,
                             model,
                             (int) width,
                             (int) height,
@@ -234,25 +222,24 @@ public class GuiController {
                             backgroundColor,
                             isRasterizationEnabled,
                             texture,
-                            texture == null ? Color.LIGHTGRAY : texColor, // Передаем цвет только если текстура не задана
-                            drawWireframeCheckBox.isSelected(), // Передаем состояние режима полигональной сетки
-                            useLightingCheckBox.isSelected() // Передаем состояние режима освещения
+                            texture == null ? Color.LIGHTGRAY : texColor,
+                            drawWireframeCheckBox.isSelected(),
+                            useLightingCheckBox.isSelected()
                     );
                 }
             } else {
                 System.out.println("Нет активной камеры для рендеринга");
             }
-            render(); // Вызов метода render() для обновления сцены
+            render();
         });
 
         timeline.getKeyFrames().add(frame);
         timeline.play();
 
-        // Обработка событий мыши
         canvas.setOnMousePressed(event -> handleMousePressed(event));
         canvas.setOnMouseDragged(event -> handleMouseDragged(event));
         canvas.setOnMouseReleased(event -> handleMouseReleased(event));
-        canvas.setOnScroll(event -> handleMouseScrolled(event)); // колесо
+        canvas.setOnScroll(event -> handleMouseScrolled(event));
 
         canvas.setOnKeyPressed(event -> handleKeyPressed(event));
         canvas.setOnKeyReleased(event -> handleKeyReleased(event));
@@ -274,9 +261,8 @@ public class GuiController {
 
     private Color getTextureColor(Image texture) {
         if (texture == null) {
-            return Color.LIGHTGRAY; // Цвет по умолчанию, если текстура не задана
+            return Color.LIGHTGRAY;
         }
-        // Пример: возвращаем цвет текстуры (например, первый пиксель текстуры)
         return texture.getPixelReader().getColor(0, 0);
     }
 
@@ -284,32 +270,32 @@ public class GuiController {
     private void handleDrawWireframe(ActionEvent event) {
         boolean isWireframeEnabled = drawWireframeCheckBox.isSelected();
         System.out.println("Wireframe mode: " + (isWireframeEnabled ? "Enabled" : "Disabled"));
-        timeline.playFromStart(); // Перерисовываем сцену
-        canvas.requestFocus(); // Устанавливаем фокус на Canvas
+        timeline.playFromStart();
+        canvas.requestFocus();
     }
 
     @FXML
     private void handleUseTexture(ActionEvent event) {
         boolean isTextureEnabled = useTextureCheckBox.isSelected();
         System.out.println("Texture mode: " + (isTextureEnabled ? "Enabled" : "Disabled"));
-        render(); // Перерисовываем сцену с учетом нового состояния текстуры
-        canvas.requestFocus(); // Устанавливаем фокус на Canvas
+        render();
+        canvas.requestFocus();
     }
 
     @FXML
     private void handleUseLighting(ActionEvent event) {
         boolean isLightingEnabled = useLightingCheckBox.isSelected();
         System.out.println("Lighting mode: " + (isLightingEnabled ? "Enabled" : "Disabled"));
-        timeline.playFromStart(); // Перерисовываем сцену с учетом нового режима
-        canvas.requestFocus(); // Устанавливаем фокус на Canvas
+        timeline.playFromStart();
+        canvas.requestFocus();
     }
 
     private void updateCameraComboBox() {
-        cameraComboBox.getItems().clear(); // Очищаем список
+        cameraComboBox.getItems().clear();
         for (int i = 0; i < cameraManager.getCameras().size(); i++) {
-            cameraComboBox.getItems().add("Камера " + i); // Добавляем камеру в список
+            cameraComboBox.getItems().add("Камера " + i);
         }
-        cameraComboBox.getSelectionModel().select(cameraManager.getActiveCameraIndex()); // Выбираем активную камеру
+        cameraComboBox.getSelectionModel().select(cameraManager.getActiveCameraIndex());
     }
 
     private void handleKeyReleased(KeyEvent event) {
@@ -317,7 +303,6 @@ public class GuiController {
         }
     }
 
-    // Обработка нажатия клавиш
     private void handleKeyPressed(KeyEvent event) {
         Camera activeCamera = cameraManager.getActiveCamera();
         if (activeCamera == null) {
@@ -332,7 +317,6 @@ public class GuiController {
             case S -> activeCamera.movePosition(new Vector3f(0, 0, TRANSLATION));
             case A -> {
                 if (isShiftPressed) {
-                    // Увеличение модели по оси Y
                     if (activeModelIndex != -1) {
                         Model activeModel = models.get(activeModelIndex);
                         Vector3f scale = activeModel.getScale();
@@ -346,8 +330,8 @@ public class GuiController {
                 if (isShiftPressed) {
                     if (activeModelIndex != -1) {
                         Model activeModel = models.get(activeModelIndex);
-                        Matrix4f rotationMatrix = GraphicConveyor.rotateX(ROTATION); // Создаем матрицу поворота вокруг оси X
-                        activeModel.setRotationMatrix(rotationMatrix); // Применяем матрицу поворота к модели
+                        Matrix4f rotationMatrix = GraphicConveyor.rotateX(ROTATION);
+                        activeModel.setRotationMatrix(rotationMatrix);
                     }
                 } else {
                     activeCamera.movePositionAndTarget(new Vector3f(-TRANSLATION, 0, 0));
@@ -431,11 +415,10 @@ public class GuiController {
 
         float sensitivity = 0.1f;
         float yaw = (float) (deltaX * sensitivity);
-        float pitch = (float) (deltaY * sensitivity);
+        float pitch = (float) (-deltaY * sensitivity);
 
         activeCamera.rotateAroundTarget(yaw, pitch);
     }
-
     private void handleMouseScrolled(ScrollEvent event) {
         double deltaY = event.getDeltaY();
 
@@ -576,25 +559,25 @@ public class GuiController {
     @FXML
     public void handleCameraForward(ActionEvent actionEvent) {
         camera.movePosition(new Vector3f(0, 0, -TRANSLATION));
-        render(); // Перерисовываем сцену
+        render();
     }
 
     @FXML
     public void handleCameraBackward(ActionEvent actionEvent) {
         camera.movePosition(new Vector3f(0, 0, TRANSLATION));
-        render(); // Перерисовываем сцену
+        render();
     }
 
     @FXML
     public void handleCameraLeft(ActionEvent actionEvent) {
         camera.movePositionAndTarget(new Vector3f(TRANSLATION, 0, 0));
-        render(); // Перерисовываем сцену
+        render();
     }
 
     @FXML
     public void handleCameraRight(ActionEvent actionEvent) {
         camera.movePositionAndTarget(new Vector3f(-TRANSLATION, 0, 0));
-        render(); // Перерисовываем сцену
+        render();
     }
 
     @FXML
@@ -911,8 +894,8 @@ public class GuiController {
             System.out.println("Ошибка: введите корректные числа для трансформации.");
         }
     }
-    private boolean isTriangulationApplied = false; // Флаг для проверки, была ли уже применена триангуляция
-    private Model originalModel; // Переменная для хранения оригинальной модели
+    private boolean isTriangulationApplied = false;
+    private Model originalModel;
     @FXML
     private void handleTriangulate(ActionEvent event) {
         if (!isTriangulationApplied) {
@@ -920,7 +903,7 @@ public class GuiController {
             System.out.println("Триангуляция включена");
             if (activeModelIndex != -1) {
                 Model activeModel = models.get(activeModelIndex);
-                originalModel = new Model(); // Создаем копию оригинальной модели
+                originalModel = new Model();
                 originalModel.vertices = new ArrayList<>(activeModel.vertices);
                 originalModel.polygons = new ArrayList<>(activeModel.polygons);
                 models.set(activeModelIndex, Triangulation.getTriangulatedModel(activeModel));
@@ -931,34 +914,27 @@ public class GuiController {
             System.out.println("Триангуляция уже была применена");
         }
     }
-
     @FXML
     private void handleDisableTriangulate(ActionEvent event) {
         isTriangulationEnabled = false;
         isTriangulationApplied = false;
         System.out.println("Триангуляция отключена");
         if (activeModelIndex != -1 && originalModel != null) {
-            models.set(activeModelIndex, originalModel); // Возвращаем оригинальную модель
-            timeline.playFromStart(); // Перерисовываем сцену
+            models.set(activeModelIndex, originalModel);
+            timeline.playFromStart();
         }
     }
-
     @FXML
     private void handleEnableRasterization(ActionEvent event) {
         isRasterizationEnabled = true;
         System.out.println("Растеризация включена");
-        timeline.playFromStart(); // Перерисовываем сцену
+        timeline.playFromStart();
     }
-
     @FXML
     private void handleDisableRasterization(ActionEvent event) {
         isRasterizationEnabled = false;
         System.out.println("Растеризация отключена");
-        timeline.playFromStart(); // Перерисовываем сцену
-    }
-
-    private Model loadOriginalModel() {
-        return originalModel;
+        timeline.playFromStart();
     }
 
     private Image texture;
@@ -972,7 +948,7 @@ public class GuiController {
         if (file != null) {
             texture = new Image(file.toURI().toString());
             System.out.println("Загруженная текстура: " + file.getName());
-            render(); // Перерисовываем сцену с новой текстурой
+            render();
         }
     }
 
@@ -992,9 +968,8 @@ public class GuiController {
                 1.0F, 1, 0.01F, 100
         );
         cameraManager.addCamera(newCamera);
-        updateCameraComboBox(); // Обновляем ComboBox
+        updateCameraComboBox();
         updateActiveCameraLabel();
-
         canvas.requestFocus();
     }
 
@@ -1003,7 +978,7 @@ public class GuiController {
         int activeIndex = cameraManager.getActiveCameraIndex();
         if (activeIndex >= 0) {
             cameraManager.removeCamera(activeIndex);
-            updateCameraComboBox(); // Обновляем ComboBox
+            updateCameraComboBox();
             updateActiveCameraLabel();
         }
     }
@@ -1032,7 +1007,7 @@ public class GuiController {
     }
 
     @FXML
-    private TitledPane renderingModesPane; // Объявляем переменную для панели Rendering modes
+    private TitledPane renderingModesPane;
 
     @FXML
     private CheckBox drawWireframeCheckBox;
