@@ -1,5 +1,6 @@
 package com.cgvsu;
 
+import com.cgvsu.math.Vector2f;
 import com.cgvsu.math.Vector3f;
 import com.cgvsu.math.Vector4f;
 import com.cgvsu.math.matrix.Matrix4f;
@@ -129,7 +130,6 @@ public class GuiController {
 
     @FXML
     private void initialize() {
-        // Устанавливаем фокус на Canvas
         canvas.setFocusTraversable(true);
         canvas.requestFocus();
 
@@ -166,11 +166,9 @@ public class GuiController {
             render(); // Перерисовываем сцену
         });
 
-        // Инициализация цветов и тем
         modelColorPicker.setValue(Color.BLACK);
         backgroundColorPicker.setValue(Color.WHITE);
 
-        // Инициализация текстовых полей
         scaleXField.setText("1.0");
         scaleYField.setText("1.0");
         scaleZField.setText("1.0");
@@ -194,14 +192,13 @@ public class GuiController {
             setActiveModel(newVal.intValue());
         });
 
-        // Инициализация CameraManager
         cameraManager = new CameraManager();
         cameraManager.addCamera(new Camera(
                 new Vector3f(0, 0, 100),
                 new Vector3f(0, 0, 0),
                 1.0F, 1, 0.01F, 100
-        )); // Добавляем начальную камеру
-        updateCameraComboBox(); // Обновляем ComboBox
+        ));
+        updateCameraComboBox();
         updateActiveCameraLabel();
 
         // Инициализация таймлайна для рендеринга
@@ -257,14 +254,11 @@ public class GuiController {
         canvas.setOnMouseReleased(event -> handleMouseReleased(event));
         canvas.setOnScroll(event -> handleMouseScrolled(event)); // колесо
 
-        // Привязка обработчиков событий для клавиатуры
         canvas.setOnKeyPressed(event -> handleKeyPressed(event));
         canvas.setOnKeyReleased(event -> handleKeyReleased(event));
 
-        // Привязка обработчиков событий для панели Rendering modes
         renderingModesPane.setOnMouseClicked(event -> canvas.requestFocus());
 
-        // Установка начальных значений
         drawWireframeCheckBox.setSelected(true);
         useTextureCheckBox.setSelected(false);
         useLightingCheckBox.setSelected(true);
@@ -272,11 +266,9 @@ public class GuiController {
         useTextureCheckBox.setOnAction(this::handleUseTexture);
         useLightingCheckBox.setOnAction(this::handleUseLighting);
 
-        // Привязка обработчика события для других элементов управления
         modelColorPicker.setOnAction(event -> render());
         backgroundColorPicker.setOnAction(event -> render());
 
-        // Устанавливаем обработчик клика на AnchorPane, чтобы возвращать фокус на Canvas
         anchorPane.setOnMouseClicked(event -> canvas.requestFocus());
     }
 
@@ -312,7 +304,6 @@ public class GuiController {
         canvas.requestFocus(); // Устанавливаем фокус на Canvas
     }
 
-    // Метод для обновления ComboBox
     private void updateCameraComboBox() {
         cameraComboBox.getItems().clear(); // Очищаем список
         for (int i = 0; i < cameraManager.getCameras().size(); i++) {
@@ -321,11 +312,8 @@ public class GuiController {
         cameraComboBox.getSelectionModel().select(cameraManager.getActiveCameraIndex()); // Выбираем активную камеру
     }
 
-    // Обработка отпускания клавиши
     private void handleKeyReleased(KeyEvent event) {
         if (event.getCode() == KeyCode.SHIFT) {
-            // Если отпущена клавиша SHIFT, сохраняем выделенные вершины
-            // (ничего не делаем, так как выделение уже сохранено)
         }
     }
 
@@ -337,11 +325,34 @@ public class GuiController {
             return;
         }
 
+        boolean isShiftPressed = event.isShiftDown();
+
         switch (event.getCode()) {
             case W -> activeCamera.movePosition(new Vector3f(0, 0, -TRANSLATION));
             case S -> activeCamera.movePosition(new Vector3f(0, 0, TRANSLATION));
-            case A -> activeCamera.movePositionAndTarget(new Vector3f(TRANSLATION, 0, 0));
-            case D -> activeCamera.movePositionAndTarget(new Vector3f(-TRANSLATION, 0, 0));
+            case A -> {
+                if (isShiftPressed) {
+                    // Увеличение модели по оси Y
+                    if (activeModelIndex != -1) {
+                        Model activeModel = models.get(activeModelIndex);
+                        Vector3f scale = activeModel.getScale();
+                        activeModel.setScale(new Vector3f(scale.getX(), scale.getY() + SCALE, scale.getZ()));
+                    }
+                } else {
+                    activeCamera.movePositionAndTarget(new Vector3f(TRANSLATION, 0, 0));
+                }
+            }
+            case D -> {
+                if (isShiftPressed) {
+                    if (activeModelIndex != -1) {
+                        Model activeModel = models.get(activeModelIndex);
+                        Matrix4f rotationMatrix = GraphicConveyor.rotateX(ROTATION); // Создаем матрицу поворота вокруг оси X
+                        activeModel.setRotationMatrix(rotationMatrix); // Применяем матрицу поворота к модели
+                    }
+                } else {
+                    activeCamera.movePositionAndTarget(new Vector3f(-TRANSLATION, 0, 0));
+                }
+            }
             case DELETE -> {
                 if (activeModelIndex != -1) {
                     Model activeModel = models.get(activeModelIndex);
@@ -358,14 +369,10 @@ public class GuiController {
         lastMouseY = event.getSceneY();
         isMousePressed = true;
 
-        // Проверяем, нажата ли клавиша SHIFT
         boolean isShiftPressed = event.isShiftDown();
-
-        // Получаем координаты клика мыши
         double mouseX = event.getX();
         double mouseY = event.getY();
 
-        // Вычисляем modelViewProjectionMatrix
         Matrix4f modelMatrix = GraphicConveyor.rotateScaleTranslate(
                 models.get(activeModelIndex).getScale().getX(),
                 models.get(activeModelIndex).getScale().getY(),
@@ -381,16 +388,14 @@ public class GuiController {
         Matrix4f projectionMatrix = camera.getProjectionMatrix();
         Matrix4f modelViewProjectionMatrix = Matrix4f.multiply(projectionMatrix, Matrix4f.multiply(viewMatrix, modelMatrix));
 
-        // Находим ближайшую вершину к клику мыши
+        // ближ верш
         int closestVertexIndex = findClosestVertex(mouseX, mouseY, modelViewProjectionMatrix);
 
         if (closestVertexIndex != -1) {
             if (!isShiftPressed) {
-                // Если SHIFT не нажата, выбираем только одну вершину
-                selectedVertices.clear(); // Очищаем список выбранных вершин
+                selectedVertices.clear();
                 selectedVertices.add(closestVertexIndex);
             } else {
-                // Если SHIFT нажата, добавляем вершину в список выбранных
                 if (!selectedVertices.contains(closestVertexIndex)) {
                     selectedVertices.add(closestVertexIndex);
                 }
@@ -403,8 +408,12 @@ public class GuiController {
             double deltaX = event.getSceneX() - lastMouseX;
             double deltaY = event.getSceneY() - lastMouseY;
 
-            // Обновляем вращение камеры в зависимости от движения мыши
-            updateCameraRotation(deltaX, deltaY);
+            Camera activeCamera = cameraManager.getActiveCamera();
+            if (activeCamera != null) {
+                updateCameraRotation(deltaX, deltaY, activeCamera);
+            } else {
+                System.out.println("Нет активной камеры для вращения");
+            }
 
             lastMouseX = event.getSceneX();
             lastMouseY = event.getSceneY();
@@ -415,17 +424,21 @@ public class GuiController {
         isMousePressed = false;
     }
 
-    private void updateCameraRotation(double deltaX, double deltaY) {
-        float sensitivity = 0.1f; // Чувствительность мыши
-        float yaw = (float) (-deltaX * sensitivity); // Инвертируем направление вращения по горизонтали
-        float pitch = (float) (-deltaY * sensitivity);
+    private void updateCameraRotation(double deltaX, double deltaY, Camera activeCamera) {
+        if (activeCamera == null) {
+            return;
+        }
 
-        // Обновляем углы вращения камеры
-        camera.rotateAroundTarget(yaw, pitch);
+        float sensitivity = 0.1f;
+        float yaw = (float) (deltaX * sensitivity);
+        float pitch = (float) (deltaY * sensitivity);
+
+        activeCamera.rotateAroundTarget(yaw, pitch);
     }
 
     private void handleMouseScrolled(ScrollEvent event) {
         double deltaY = event.getDeltaY();
+
         Camera activeCamera = cameraManager.getActiveCamera();
         if (activeCamera != null) {
             if (deltaY > 0) {
@@ -438,7 +451,6 @@ public class GuiController {
         }
     }
 
-    // Метод для поиска ближайшей вершины к клику мыши
     private int findClosestVertex(double mouseX, double mouseY, Matrix4f modelViewProjectionMatrix) {
         if (activeModelIndex == -1) return -1;
 
@@ -449,7 +461,6 @@ public class GuiController {
         for (int i = 0; i < activeModel.vertices.size(); i++) {
             Vector3f vertex = activeModel.vertices.get(i);
 
-            // Преобразуем вершину в экранные координаты
             Vector4f vertexVecmath = new Vector4f(vertex.getX(), vertex.getY(), vertex.getZ(), 1);
             Point2f screenPoint = GraphicConveyor.vertexToPoint(
                     Matrix4f.multiply(modelViewProjectionMatrix, vertexVecmath).normalizeTo3f(),
@@ -457,10 +468,8 @@ public class GuiController {
                     (int) canvas.getHeight()
             );
 
-            // Вычисляем расстояние до точки мыши
             double distance = Math.sqrt(Math.pow(screenPoint.x - mouseX, 2) + Math.pow(screenPoint.y - mouseY, 2));
 
-            // Если расстояние меньше минимального, обновляем ближайшую вершину
             if (distance < minDistance) {
                 minDistance = distance;
                 closestVertexIndex = i;
@@ -470,7 +479,6 @@ public class GuiController {
         return closestVertexIndex;
     }
 
-    // Установка активной модели
     private void setActiveModel(int index) {
         if (index >= 0 && index < models.size()) {
             activeModelIndex = index;
@@ -481,7 +489,6 @@ public class GuiController {
         }
     }
 
-    // Добавление модели
     @FXML
     private void onOpenModelMenuItemClick() {
         FileChooser fileChooser = new FileChooser();
@@ -507,7 +514,6 @@ public class GuiController {
         }
     }
 
-    // Удаление модели
     @FXML
     private void onRemoveModelButtonClick() {
         if (activeModelIndex != -1) {
@@ -519,7 +525,6 @@ public class GuiController {
         }
     }
 
-    // Обновление списка моделей
     private void updateModelList() {
         modelListView.getItems().clear();
         for (Model model : models) {
@@ -527,7 +532,6 @@ public class GuiController {
         }
     }
 
-    // Сохранение исходной модели
     @FXML
     private void onSaveOriginalModelMenuItemClick() {
         if (activeModelIndex != -1) {
@@ -538,7 +542,6 @@ public class GuiController {
         }
     }
 
-    // Сохранение трансформированной модели
     @FXML
     private void onSaveTransformedModelMenuItemClick() {
         if (activeModelIndex != -1) {
@@ -549,7 +552,6 @@ public class GuiController {
         }
     }
 
-    // Метод для сохранения модели
     private void saveModel(Model model, boolean applyTransformations) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Model (*.obj)", "*.obj"));
@@ -571,7 +573,6 @@ public class GuiController {
         }
     }
 
-    // Управление камерой
     @FXML
     public void handleCameraForward(ActionEvent actionEvent) {
         camera.movePosition(new Vector3f(0, 0, -TRANSLATION));
@@ -595,8 +596,6 @@ public class GuiController {
         camera.movePositionAndTarget(new Vector3f(-TRANSLATION, 0, 0));
         render(); // Перерисовываем сцену
     }
-
-    // Трансформации модели
 
     @FXML
     public void applyScale(ActionEvent event) {
@@ -854,13 +853,11 @@ public class GuiController {
     @FXML
     private TextField translateXField, translateYField, translateZField;
 
-    // Метод для переключения видимости панели настроек
     @FXML
     private void toggleSettingsPanel() {
         settingsPanel.setVisible(!settingsPanel.isVisible());
     }
 
-    // Метод для изменения цвета линий модели
     @FXML
     private void handleModelColorChange(ActionEvent event) {
         Color color = modelColorPicker.getValue();
@@ -961,7 +958,6 @@ public class GuiController {
     }
 
     private Model loadOriginalModel() {
-// Возвращаем сохранённую оригинальную модель
         return originalModel;
     }
 
@@ -999,7 +995,6 @@ public class GuiController {
         updateCameraComboBox(); // Обновляем ComboBox
         updateActiveCameraLabel();
 
-        // Убеждаемся, что Canvas в фокусе
         canvas.requestFocus();
     }
 

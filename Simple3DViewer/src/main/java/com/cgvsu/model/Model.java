@@ -2,6 +2,7 @@ package com.cgvsu.model;
 
 import com.cgvsu.math.Vector2f;
 import com.cgvsu.math.Vector3f;
+import com.cgvsu.math.matrix.Matrix4f;
 import javafx.scene.paint.Color;
 
 import java.util.ArrayList;
@@ -18,6 +19,16 @@ public class Model {
     private Vector3f scale = new Vector3f(1, 1, 1);
     private Vector3f rotation = new Vector3f(0, 0, 0);
     private Vector3f translation = new Vector3f(0, 0, 0);
+
+    private Matrix4f rotationMatrix = new Matrix4f().unit(); // Единичная матрица по умолчанию
+
+    public void setRotationMatrix(Matrix4f rotationMatrix) {
+        this.rotationMatrix = rotationMatrix;
+    }
+
+    public Matrix4f getRotationMatrix() {
+        return rotationMatrix;
+    }
 
     private String name = "Unnamed Model";
 
