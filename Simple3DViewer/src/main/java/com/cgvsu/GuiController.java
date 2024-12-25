@@ -36,6 +36,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import com.cgvsu.animation.Frame;
+import javafx.animation.*;
 
 public class GuiController {
 
@@ -80,6 +82,14 @@ public class GuiController {
     private double lastMouseY = 0;
     private boolean isMousePressed = false;
     /////////
+
+    @FXML
+    private TextField frameDurationField; // Field for user to input duration
+    private List<Frame> animationFrames = new ArrayList<>();
+    private Timeline animationTimeline;
+    @FXML
+    private ListView<String> animationListView;
+
 
     @FXML
     private void initialize() {
@@ -186,6 +196,134 @@ public class GuiController {
         if (event.getCode() == KeyCode.SHIFT) {
         }
     }
+
+    ////////////////анимация
+    @FXML
+    private void onAddFrameButtonClick() {
+        if (activeModelIndex != -1) {
+            Model activeModel = models.get(activeModelIndex);
+            Frame frame = createFrameFromModel(activeModel);
+            animationFrames.add(frame);
+
+            animationListView.getItems().add("Frame " + (animationFrames.size()) +
+                    " Duration: " + frame.getDuration() + " ms (mili sec)");
+            System.out.println("Frame added.");
+        }
+    }
+
+    @FXML
+    private void onDeleteFrameButtonClick() {
+        int selectedIndex = animationListView.getSelectionModel().getSelectedIndex();
+        if (selectedIndex != -1) {
+            animationFrames.remove(selectedIndex);
+            animationListView.getItems().remove(selectedIndex);
+            System.out.println("Кадр " + (selectedIndex + 1) + " удален.");
+        } else {
+            System.out.println("Кадр для удаления не выбран.");
+        }
+    }
+
+
+    @FXML
+    private void handleSetFrameDuration() {
+        String durationText = frameDurationField.getText();
+        int selectedIndex = animationListView.getSelectionModel().getSelectedIndex();
+
+        try {
+            int duration = Integer.parseInt(durationText);
+            if (selectedIndex != -1) {
+                Frame selectedFrame = animationFrames.get(selectedIndex);
+                selectedFrame.setDuration(duration); // обновить длительность выбранного кадра
+
+                // Обновить отображение в ListView
+                animationListView.getItems().set(selectedIndex,
+                        "Frame " + (selectedIndex + 1) + " Duration: " + duration + " ms (mili sec)");
+
+                System.out.println("Продолжительность кадра " + (selectedIndex + 1) + ": " + duration + " мсек");
+            } else {
+                System.out.println("Кадр для изменения длительности не выбран.");
+            }
+
+        } catch (NumberFormatException e) {
+            System.out.println("Неверный ввод для длительности.");
+        }
+    }
+
+    private Frame createFrameFromModel(Model activeModel) {
+        float scaleX = activeModel.getScale().getX();
+        float scaleY = activeModel.getScale().getY();
+        float scaleZ = activeModel.getScale().getZ();
+
+        float rotateX = activeModel.getRotation().getX();
+        float rotateY = activeModel.getRotation().getY();
+        float rotateZ = activeModel.getRotation().getZ();
+
+        float translateX = activeModel.getTranslation().getX();
+        float translateY = activeModel.getTranslation().getY();
+        float translateZ = activeModel.getTranslation().getZ();
+
+        int duration = 1000; // можно задать собственное время, по умолчанию 1000 мсек
+        return new Frame(scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ,
+                translateX, translateY, translateZ, duration);
+    }
+
+    @FXML
+    private void onPlayAnimationButtonClick() {
+        if (animationFrames.isEmpty()) return;
+
+
+        // стоп
+        if (animationTimeline != null) {
+            animationTimeline.stop();
+        }
+
+        animationTimeline = new Timeline();
+
+        for (int i = 0; i < animationFrames.size() - 1; i++) {
+            Frame startFrame = animationFrames.get(i);
+            Frame endFrame = animationFrames.get(i + 1);
+            int duration = endFrame.getDuration();
+
+            // для интер
+            for (int t = 0; t < duration; t += 33) { // примерно 30 FPS
+                double interpolatedTime = t / (double) duration;
+                KeyFrame keyFrame = new KeyFrame(Duration.millis(t + (i * duration)), event -> {
+                    interpolateFrames(startFrame, endFrame, (float) interpolatedTime);
+                });
+                animationTimeline.getKeyFrames().add(keyFrame);
+            }
+        }
+
+        animationTimeline.play();
+    }
+
+    private void interpolateFrames(Frame startFrame, Frame endFrame, float t) {
+        float scaleX = lerp(startFrame.getScaleX(), endFrame.getScaleX(), t);
+        float scaleY = lerp(startFrame.getScaleY(), endFrame.getScaleY(), t);
+        float scaleZ = lerp(startFrame.getScaleZ(), endFrame.getScaleZ(), t);
+
+        float rotateX = lerp(startFrame.getRotateX(), endFrame.getRotateX(), t);
+        float rotateY = lerp(startFrame.getRotateY(), endFrame.getRotateY(), t);
+        float rotateZ = lerp(startFrame.getRotateZ(), endFrame.getRotateZ(), t);
+
+        float translateX = lerp(startFrame.getTranslateX(), endFrame.getTranslateX(), t);
+        float translateY = lerp(startFrame.getTranslateY(), endFrame.getTranslateY(), t);
+        float translateZ = lerp(startFrame.getTranslateZ(), endFrame.getTranslateZ(), t);
+
+        // применить интер транс
+        if (activeModelIndex != -1) {
+            Model activeModel = models.get(activeModelIndex);
+            activeModel.setScale(new Vector3f(scaleX, scaleY, scaleZ));
+            activeModel.setRotation(new Vector3f(rotateX, rotateY, rotateZ));
+            activeModel.setTranslation(new Vector3f(translateX, translateY, translateZ));
+            updateTransformFields(activeModel); // обнова интер
+        }
+    }
+
+    private float lerp(float start, float end, float t) {
+        return start + t * (end - start);
+    }
+    ////////////// конец анимация
 
     /////////мышь
     private void handleMousePressed(MouseEvent event) {

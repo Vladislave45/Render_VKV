@@ -252,7 +252,24 @@
     <ListView fx:id="modelListView" prefHeight="200" prefWidth="200" AnchorPane.leftAnchor="10"
               AnchorPane.topAnchor="60"/>
 
+    <!-- список анимации -->
+    <ListView fx:id="animationListView" prefHeight="200" prefWidth="200" AnchorPane.leftAnchor="10"
+              AnchorPane.bottomAnchor="120"/>
 
+    <!-- Кнопки для управления анимацией под списком анимации -->
+    <HBox spacing="10" AnchorPane.leftAnchor="10" AnchorPane.bottomAnchor="80">
+        <Button text="Add Frame" onAction="#onAddFrameButtonClick"/>
+        <Button text="Delete Frame" onAction="#onDeleteFrameButtonClick"/>
+        <Button text="Play Animation" onAction="#onPlayAnimationButtonClick"/>
+    </HBox>
 
+    <!-- Поле для установки длительности кадра -->
+    <VBox spacing="10" AnchorPane.leftAnchor="10" AnchorPane.bottomAnchor="20" prefWidth="200">
+        <Label text="Set Frame Duration (ms):"/>
+        <HBox spacing="10">
+            <TextField fx:id="frameDurationField" prefWidth="50" promptText="Duration"/>
+            <Button text="Set Duration" onAction="#handleSetFrameDuration"/>
+        </HBox>
+    </VBox>
 
 </AnchorPane>
