@@ -128,7 +128,7 @@ public class RenderEngine {
                         useLighting,
                         lightPosition,
                         lightColor,
-                        mesh
+                        mesh // Передаем объект Model
                 );
             }
         }

@@ -56,13 +56,14 @@ public class TriangleRasterization {
                     float depth = interpolateDepth(x, y, v1, v2, v3, v1_3d, v2_3d, v3_3d);
 
                     if (ZBuffer.testBuffer(x, y, depth, zBuffer)) {
+                        // Интерполяция текстурных координат
                         float u = interpolateTexture(x, y, v1, v2, v3, t1.getX(), t2.getX(), t3.getX());
                         float v = interpolateTexture(x, y, v1, v2, v3, t1.getY(), t2.getY(), t3.getY());
 
                         // Интерполяция нормали
                         Vector3f normal = interpolateNormal(x, y, v1, v2, v3, vertexNormals.get(0), vertexNormals.get(1), vertexNormals.get(2));
 
-                        // Трансформация нормали с использованием normalMatrix
+                        // Трансформация нормали
                         Vector3f transformedNormal = Matrix4f.multiply(normalMatrix, normal).normalize();
 
                         // Интерполяция позиции вершины
