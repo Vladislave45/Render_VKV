@@ -1,8 +1,7 @@
 package com.cgvsu.math.matrix;
 
 import com.cgvsu.math.Vector4f;
-
-import javax.vecmath.Vector3f;
+import com.cgvsu.math.Vector3f;
 import java.util.Arrays;
 
 public class Matrix4f{
@@ -24,9 +23,6 @@ public class Matrix4f{
                         {0, 0, 0, 0}
                 };
     }
-
-
-
 
     public float[][] getMatrix() {
         return matrix;
@@ -208,7 +204,6 @@ public class Matrix4f{
                 }
             }
         }
-        System.out.println(Arrays.deepToString(matrix));
         Matrix4f result = new Matrix4f(matrix);
         result = result.transpose();
 
@@ -257,5 +252,13 @@ public class Matrix4f{
             }
         }
         return true;
+    }
+
+    public static Vector3f multiply(Matrix4f matrix, Vector3f vector) {
+        Vector4f vec4 = new Vector4f(vector.getX(), vector.getY(), vector.getZ(), 1.0f);
+
+        Vector4f result = multiply(matrix, vec4);
+
+        return new Vector3f(result.getX(), result.getY(), result.getZ());
     }
 }

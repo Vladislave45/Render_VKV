@@ -2,11 +2,13 @@ package com.cgvsu.utils;
 
 import com.cgvsu.math.Vector2f;
 import com.cgvsu.math.Vector3f;
+import com.cgvsu.math.matrix.Matrix4f;
 import com.cgvsu.render_engine.Camera;
+import com.cgvsu.render_engine.GraphicConveyor;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
-
+import com.cgvsu.model.Model;
 import java.util.List;
 
 public class TriangleRasterization {
@@ -25,11 +27,22 @@ public class TriangleRasterization {
             int height,
             boolean useLighting,
             Vector3f lightPosition,
-            Color lightColor
+            Color lightColor,
+            Model model
     ) {
         Vector2f v1 = triangle.get(0);
         Vector2f v2 = triangle.get(1);
         Vector2f v3 = triangle.get(2);
+
+        // Матрица модели
+        Matrix4f modelMatrix = GraphicConveyor.rotateScaleTranslate(
+                model.getScale().getX(), model.getScale().getY(), model.getScale().getZ(),
+                model.getRotation().getX(), model.getRotation().getY(), model.getRotation().getZ(),
+                model.getTranslation().getX(), model.getTranslation().getY(), model.getTranslation().getZ()
+        );
+
+        // Обратная транспонированная матрица для нормалей
+        Matrix4f normalMatrix = modelMatrix.inverse().transpose();
 
         // Растеризация треугольника
         int minX = (int) Math.min(v1.getX(), Math.min(v2.getX(), v3.getX()));
@@ -47,7 +60,10 @@ public class TriangleRasterization {
                         float v = interpolateTexture(x, y, v1, v2, v3, t1.getY(), t2.getY(), t3.getY());
 
                         // Интерполяция нормали
-                        Vector3f normal = interpolateNormal(x, y, v1, v2, v3, vertexNormals.get(0), vertexNormals.get(1), vertexNormals.get(2)).normalize();
+                        Vector3f normal = interpolateNormal(x, y, v1, v2, v3, vertexNormals.get(0), vertexNormals.get(1), vertexNormals.get(2));
+
+                        // Трансформация нормали с использованием normalMatrix
+                        Vector3f transformedNormal = Matrix4f.multiply(normalMatrix, normal).normalize();
 
                         // Интерполяция позиции вершины
                         Vector3f vertexPosition = interpolatePosition(x, y, v1, v2, v3, v1_3d, v2_3d, v3_3d);
@@ -58,7 +74,7 @@ public class TriangleRasterization {
 
                         // Применяем освещение, если оно включено
                         if (useLighting) {
-                            finalColor = calculateLighting(normal, lightPosition, vertexPosition, finalColor, lightColor);
+                            finalColor = calculateLighting(transformedNormal, lightPosition, vertexPosition, finalColor, lightColor);
                         }
 
                         // Устанавливаем цвет пикселя

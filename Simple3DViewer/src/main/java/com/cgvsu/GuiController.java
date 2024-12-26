@@ -104,7 +104,7 @@ public class GuiController {
                 RenderEngine.render(
                         canvas.getGraphicsContext2D(),
                         activeCamera,
-                        model,
+                        model, // Передаем модель
                         (int) width,
                         (int) height,
                         selectedVertices,
@@ -115,8 +115,8 @@ public class GuiController {
                         fillColor,
                         drawWireframeCheckBox.isSelected(),
                         useLightingCheckBox.isSelected(),
-                        lightPosition, // Передаём позицию света
-                        lightColor // Передаём цвет света
+                        lightPosition,
+                        lightColor
                 );
             }
         } else {
@@ -1098,7 +1098,7 @@ public class GuiController {
             float posY = Float.parseFloat(lightPositionYField.getText());
             float posZ = Float.parseFloat(lightPositionZField.getText());
 
-            lightPosition = new Vector3f(posX, posY, posZ);
+            lightPosition = new Vector3f(posX, posY, posZ); // Позиция света в мировых координатах
             render();
         } catch (NumberFormatException e) {
             System.out.println("Ошибка: введите корректные числа для позиции света.");

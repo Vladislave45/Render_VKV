@@ -127,7 +127,8 @@ public class RenderEngine {
                         height,
                         useLighting,
                         lightPosition,
-                        lightColor
+                        lightColor,
+                        mesh
                 );
             }
         }
