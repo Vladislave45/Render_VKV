@@ -192,7 +192,7 @@ public class RenderEngine {
                 fillColor,
                 width,
                 height,
-                useLighting // Передаем состояние освещения
+                useLighting
         );
     }
 

@@ -4,6 +4,13 @@ import com.cgvsu.math.Vector3f;
 import com.cgvsu.math.matrix.Matrix4f;
 
 public class Camera {
+    private Vector3f lightPosition; // Позиция источника света
+    private Vector3f position;
+    private Vector3f target;
+    private float fov;
+    private float aspectRatio;
+    private float nearPlane;
+    private float farPlane;
 
     public Camera(
             final Vector3f position,
@@ -19,7 +26,6 @@ public class Camera {
         this.nearPlane = nearPlane;
         this.farPlane = farPlane;
 
-        // Источник света привязывается к камере
         this.lightPosition = new Vector3f(position.getX(), position.getY(), position.getZ());
     }
 
@@ -94,16 +100,7 @@ public class Camera {
         direction.setY(newY);
         direction.setZ(newZ2);
 
-        // Обновляем позицию камеры
         position = Vector3f.deduct(target, direction);
     }
-    ////////мышь
-
-    private Vector3f lightPosition; // Позиция источника света
-    private Vector3f position;
-    private Vector3f target;
-    private float fov;
-    private float aspectRatio;
-    private float nearPlane;
-    private float farPlane;
+    ///////мышь
 }

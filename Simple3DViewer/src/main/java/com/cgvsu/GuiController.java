@@ -129,6 +129,7 @@ public class GuiController {
         canvas.requestFocus();
 
         canvas.setOnMouseClicked(event -> canvas.requestFocus());
+        canvas.setOnMouseClicked(event -> canvas.requestFocus());
 
         canvas.setOnKeyPressed(event -> {
             switch (event.getCode()) {
@@ -190,6 +191,7 @@ public class GuiController {
                 new Vector3f(0, 0, 0),
                 1.0F, 1, 0.01F, 100
         ));
+        cameraManager.setActiveCamera(0);
         updateCameraComboBox();
         updateActiveCameraLabel();
 
@@ -257,45 +259,13 @@ public class GuiController {
         backgroundColorPicker.setOnAction(event -> render());
 
         anchorPane.setOnMouseClicked(event -> canvas.requestFocus());
-    }
 
-    private Color getTextureColor(Image texture) {
-        if (texture == null) {
-            return Color.LIGHTGRAY;
-        }
-        return texture.getPixelReader().getColor(0, 0);
-    }
-
-    @FXML
-    private void handleDrawWireframe(ActionEvent event) {
-        boolean isWireframeEnabled = drawWireframeCheckBox.isSelected();
-        System.out.println("Wireframe mode: " + (isWireframeEnabled ? "Enabled" : "Disabled"));
-        timeline.playFromStart();
-        canvas.requestFocus();
-    }
-
-    @FXML
-    private void handleUseTexture(ActionEvent event) {
-        boolean isTextureEnabled = useTextureCheckBox.isSelected();
-        System.out.println("Texture mode: " + (isTextureEnabled ? "Enabled" : "Disabled"));
-        render();
-        canvas.requestFocus();
-    }
-
-    @FXML
-    private void handleUseLighting(ActionEvent event) {
-        boolean isLightingEnabled = useLightingCheckBox.isSelected();
-        System.out.println("Lighting mode: " + (isLightingEnabled ? "Enabled" : "Disabled"));
-        timeline.playFromStart();
-        canvas.requestFocus();
-    }
-
-    private void updateCameraComboBox() {
-        cameraComboBox.getItems().clear();
-        for (int i = 0; i < cameraManager.getCameras().size(); i++) {
-            cameraComboBox.getItems().add("Камера " + i);
-        }
-        cameraComboBox.getSelectionModel().select(cameraManager.getActiveCameraIndex());
+        anchorPane.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            if (event.getCode() == KeyCode.W || event.getCode() == KeyCode.A ||
+                    event.getCode() == KeyCode.S || event.getCode() == KeyCode.D) {
+                handleKeyPressed(event);
+            }
+        });
     }
 
     private void handleKeyReleased(KeyEvent event) {
@@ -303,7 +273,13 @@ public class GuiController {
         }
     }
 
+    @FXML
     private void handleKeyPressed(KeyEvent event) {
+        // Игнорируем события, если фокус находится на текстовых полях
+        if (cameraPositionXField.isFocused() || cameraPositionYField.isFocused() || cameraPositionZField.isFocused()) {
+            return;
+        }
+
         Camera activeCamera = cameraManager.getActiveCamera();
         if (activeCamera == null) {
             System.out.println("Нет активной камеры для управления");
@@ -345,6 +321,7 @@ public class GuiController {
                 }
             }
         }
+        updateCameraPositionFields();
     }
 
     /////////мышь
@@ -398,6 +375,7 @@ public class GuiController {
             } else {
                 System.out.println("Нет активной камеры для вращения");
             }
+            updateCameraPositionFields();
 
             lastMouseX = event.getSceneX();
             lastMouseY = event.getSceneY();
@@ -408,17 +386,6 @@ public class GuiController {
         isMousePressed = false;
     }
 
-    private void updateCameraRotation(double deltaX, double deltaY, Camera activeCamera) {
-        if (activeCamera == null) {
-            return;
-        }
-
-        float sensitivity = 0.1f;
-        float yaw = (float) (deltaX * sensitivity);
-        float pitch = (float) (-deltaY * sensitivity);
-
-        activeCamera.rotateAroundTarget(yaw, pitch);
-    }
     private void handleMouseScrolled(ScrollEvent event) {
         double deltaY = event.getDeltaY();
 
@@ -429,6 +396,7 @@ public class GuiController {
             } else {
                 activeCamera.movePosition(new Vector3f(0, 0, TRANSLATION));
             }
+            updateCameraPositionFields();
         } else {
             System.out.println("Нет активной камеры для изменения положения");
         }
@@ -556,6 +524,37 @@ public class GuiController {
         }
     }
 
+    private Color getTextureColor(Image texture) {
+        if (texture == null) {
+            return Color.LIGHTGRAY;
+        }
+        return texture.getPixelReader().getColor(0, 0);
+    }
+
+    @FXML
+    private void handleUseTexture(ActionEvent event) {
+        boolean isTextureEnabled = useTextureCheckBox.isSelected();
+        System.out.println("Texture mode: " + (isTextureEnabled ? "Enabled" : "Disabled"));
+        render();
+        canvas.requestFocus();
+    }
+
+    @FXML
+    private void handleUseLighting(ActionEvent event) {
+        boolean isLightingEnabled = useLightingCheckBox.isSelected();
+        System.out.println("Lighting mode: " + (isLightingEnabled ? "Enabled" : "Disabled"));
+        timeline.playFromStart();
+        canvas.requestFocus();
+    }
+
+    private void updateCameraComboBox() {
+        cameraComboBox.getItems().clear();
+        for (int i = 0; i < cameraManager.getCameras().size(); i++) {
+            cameraComboBox.getItems().add("Камера " + (i + 1)); // Начинаем с 1
+        }
+        cameraComboBox.getSelectionModel().select(cameraManager.getActiveCameraIndex());
+    }
+
     @FXML
     public void handleCameraForward(ActionEvent actionEvent) {
         camera.movePosition(new Vector3f(0, 0, -TRANSLATION));
@@ -578,6 +577,28 @@ public class GuiController {
     public void handleCameraRight(ActionEvent actionEvent) {
         camera.movePositionAndTarget(new Vector3f(-TRANSLATION, 0, 0));
         render();
+    }
+
+    private void updateCameraRotation(double deltaX, double deltaY, Camera activeCamera) {
+        if (activeCamera == null) {
+            return;
+        }
+
+        float sensitivity = 0.1f;
+        float yaw = (float) (deltaX * sensitivity);
+        float pitch = (float) (-deltaY * sensitivity);
+
+        activeCamera.rotateAroundTarget(yaw, pitch);
+    }
+
+    private void updateCameraPositionFields() {
+        Camera activeCamera = cameraManager.getActiveCamera();
+        if (activeCamera != null) {
+            Vector3f position = activeCamera.getPosition();
+            cameraPositionXField.setText(String.valueOf(position.getX()));
+            cameraPositionYField.setText(String.valueOf(position.getY()));
+            cameraPositionZField.setText(String.valueOf(position.getZ()));
+        }
     }
 
     @FXML
@@ -999,10 +1020,42 @@ public class GuiController {
             cameraManager.setActiveCamera(selectedIndex);
             updateActiveCameraLabel();
 
-            canvas.setOnKeyPressed(event -> handleKeyPressed(event));
-            canvas.setOnKeyReleased(event -> handleKeyReleased(event));
+            // Обновляем поля с координатами камеры
+            Camera activeCamera = cameraManager.getActiveCamera();
+            if (activeCamera != null) {
+                Vector3f position = activeCamera.getPosition();
+                cameraPositionXField.setText(String.valueOf(position.getX()));
+                cameraPositionYField.setText(String.valueOf(position.getY()));
+                cameraPositionZField.setText(String.valueOf(position.getZ()));
+            }
 
             canvas.requestFocus();
+        }
+    }
+
+    @FXML
+    private TextField cameraPositionXField;
+    @FXML
+    private TextField cameraPositionYField;
+    @FXML
+    private TextField cameraPositionZField;
+
+    @FXML
+    private void handleApplyCameraPosition(ActionEvent event) {
+        Camera activeCamera = cameraManager.getActiveCamera();
+        if (activeCamera != null) {
+            try {
+                float posX = Float.parseFloat(cameraPositionXField.getText());
+                float posY = Float.parseFloat(cameraPositionYField.getText());
+                float posZ = Float.parseFloat(cameraPositionZField.getText());
+
+                activeCamera.setPosition(new Vector3f(posX, posY, posZ));
+                render();
+            } catch (NumberFormatException e) {
+                System.out.println("Ошибка: введите корректные числа для координат камеры.");
+            }
+        } else {
+            System.out.println("Нет активной камеры для изменения координат");
         }
     }
 

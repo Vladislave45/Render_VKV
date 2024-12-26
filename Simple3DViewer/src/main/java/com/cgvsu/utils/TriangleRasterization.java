@@ -104,91 +104,6 @@ public class TriangleRasterization {
         }
     }
 
-    public static void rasterizeTriangle(
-            GraphicsContext gc,
-            Vector2f v1, Vector2f v2, Vector2f v3,
-            Vector3f v1_3d, Vector3f v2_3d, Vector3f v3_3d,
-            List<List<Float>> zBuffer,
-            int width, int height,
-            Image texture,
-            Vector2f t1, Vector2f t2, Vector2f t3,
-            List<Vector3f> vertexNormals,
-            Camera camera,
-            Color fillColor,
-            boolean useLighting
-    ) {
-        // Сортировка вершин по Y
-        if (v1.getY() > v2.getY()) {
-            Vector2f temp = v1;
-            v1 = v2;
-            v2 = temp;
-
-            Vector3f temp3d = v1_3d;
-            v1_3d = v2_3d;
-            v2_3d = temp3d;
-
-            Vector2f tempTex = t1;
-            t1 = t2;
-            t2 = tempTex;
-        }
-        if (v2.getY() > v3.getY()) {
-            Vector2f temp = v2;
-            v2 = v3;
-            v3 = temp;
-
-            Vector3f temp3d = v2_3d;
-            v2_3d = v3_3d;
-            v3_3d = temp3d;
-
-            Vector2f tempTex = t2;
-            t2 = t3;
-            t3 = tempTex;
-        }
-        if (v1.getY() > v2.getY()) {
-            Vector2f temp = v1;
-            v1 = v2;
-            v2 = temp;
-
-            Vector3f temp3d = v1_3d;
-            v1_3d = v2_3d;
-            v2_3d = temp3d;
-
-            Vector2f tempTex = t1;
-            t1 = t2;
-            t2 = tempTex;
-        }
-
-        // Растеризация треугольника
-        int minX = (int) Math.min(v1.getX(), Math.min(v2.getX(), v3.getX()));
-        int maxX = (int) Math.max(v1.getX(), Math.max(v2.getX(), v3.getX()));
-        int minY = (int) Math.min(v1.getY(), Math.min(v2.getY(), v3.getY()));
-        int maxY = (int) Math.max(v1.getY(), Math.max(v2.getY(), v3.getY()));
-
-        for (int y = minY; y <= maxY; y++) {
-            for (int x = minX; x <= maxX; x++) {
-                if (isPointInTriangle(x, y, v1, v2, v3)) {
-                    float depth = interpolateDepth(x, y, v1, v2, v3, v1_3d, v2_3d, v3_3d);
-
-                    if (ZBuffer.testBuffer(x, y, depth, zBuffer)) {
-                        float u = interpolateTexture(x, y, v1, v2, v3, t1.getX(), t2.getX(), t3.getX());
-                        float v = interpolateTexture(x, y, v1, v2, v3, t1.getY(), t2.getY(), t3.getY());
-
-                        Vector3f normal = interpolateNormal(x, y, v1, v2, v3, vertexNormals.get(0), vertexNormals.get(1), vertexNormals.get(2)).normalize();
-
-                        Color texColor = getTextureColor(texture, u, v);
-                        Color finalColor = texColor; // По умолчанию цвет текстуры
-
-                        if (useLighting) { // Применяем освещение, если оно включено
-                            finalColor = calculateLighting(normal, camera.getLightPosition(), texColor);
-                        }
-
-                        gc.getPixelWriter().setColor(x, y, finalColor);
-                    }
-                }
-            }
-        }
-    }
-
     private static float edgeFunction(Vector2f a, Vector2f b, Vector2f c) {
         return (b.getX() - a.getX()) * (c.getY() - a.getY()) - (b.getY() - a.getY()) * (c.getX() - a.getX());
     }
@@ -205,11 +120,9 @@ public class TriangleRasterization {
     private static Color getTextureColor(Image texture, float u, float v) {
         if (texture == null) return Color.WHITE;
 
-        // Преобразуем текстурные координаты в целочисленные координаты текстуры
         int x = (int) (u * (texture.getWidth() - 1));
         int y = (int) (v * (texture.getHeight() - 1));
 
-        // Получаем цвет пикселя напрямую
         return texture.getPixelReader().getColor(x, y);
     }
 
@@ -233,10 +146,6 @@ public class TriangleRasterization {
         boolean hasPos = (d1 > 0) || (d2 > 0) || (d3 > 0);
 
         return !(hasNeg && hasPos);
-    }
-
-    private static float sign(int x, int y, Vector2f v1, Vector2f v2) {
-        return (x - v2.getX()) * (v1.getY() - v2.getY()) - (v1.getX() - v2.getX()) * (y - v2.getY());
     }
 
     private static float interpolateDepth(int x, int y, Vector2f v1, Vector2f v2, Vector2f v3, Vector3f v1_3d, Vector3f v2_3d, Vector3f v3_3d) {

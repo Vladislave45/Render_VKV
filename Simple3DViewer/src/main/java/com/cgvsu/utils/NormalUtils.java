@@ -13,7 +13,7 @@ public class NormalUtils {
     public static List<Vector3f> recalculateVertexNormals(Model model) {
         List<Vector3f> vertexNormals = new ArrayList<>();
         for (int i = 0; i < model.vertices.size(); i++) {
-            vertexNormals.add(new Vector3f(0, 0, 0)); // Инициализируем нормали вершин нулями
+            vertexNormals.add(new Vector3f(0, 0, 0));
         }
 
         // Пересчитываем нормали вершин

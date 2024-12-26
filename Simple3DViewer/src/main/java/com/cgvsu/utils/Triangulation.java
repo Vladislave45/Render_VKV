@@ -11,16 +11,14 @@ public class Triangulation {
     public static Model getTriangulatedModel(Model model) {
         assert !model.polygons.isEmpty() : "Empty model";
 
-        // Создаем новую модель и копируем параметры преобразования
         Model triangulatedModel = new Model();
         triangulatedModel.textureVertices = model.textureVertices;
         triangulatedModel.vertices = model.vertices;
         triangulatedModel.normals = model.normals;
-        triangulatedModel.setScale(model.getScale()); // Копируем масштаб
-        triangulatedModel.setRotation(model.getRotation()); // Копируем поворот
-        triangulatedModel.setTranslation(model.getTranslation()); // Копируем перемещение
+        triangulatedModel.setScale(model.getScale());
+        triangulatedModel.setRotation(model.getRotation());
+        triangulatedModel.setTranslation(model.getTranslation());
 
-        // Триангуляция полигонов
         Map<Polygon, List<Vector3f>> polyVertMap = getPolyVertMap(model);
         for (Map.Entry<Polygon, List<Vector3f>> entry : polyVertMap.entrySet()) {
             List<Vector3f> vertices = entry.getValue();

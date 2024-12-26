@@ -280,11 +280,24 @@
                     <Button fx:id="removeCameraButton" text="Удалить камеру" onAction="#handleRemoveCamera"/>
 
                     <ComboBox fx:id="cameraComboBox" onAction="#handleCameraSelection"/>
+
+                    <!-- Поля для изменения координат камеры -->
+                    <HBox spacing="10">
+                        <Label text="Position X:"/>
+                        <TextField fx:id="cameraPositionXField" prefWidth="50"/>
+                    </HBox>
+                    <HBox spacing="10">
+                        <Label text="Position Y:"/>
+                        <TextField fx:id="cameraPositionYField" prefWidth="50"/>
+                    </HBox>
+                    <HBox spacing="10">
+                        <Label text="Position Z:"/>
+                        <TextField fx:id="cameraPositionZField" prefWidth="50"/>
+                    </HBox>
+
+                    <Button text="Применить позицию камеры" onAction="#handleApplyCameraPosition"/>
                 </VBox>
             </TitledPane>
-
-
-
 
 
         </panes>

@@ -15,7 +15,7 @@ public class CameraManager {
     public void addCamera(Camera camera) {
         cameras.add(camera);
         if (activeCameraIndex == -1) {
-            activeCameraIndex = 0; // Если это первая камера, сразу делаем её активной
+            activeCameraIndex = 0;
         }
     }
 
@@ -23,9 +23,9 @@ public class CameraManager {
         if (index >= 0 && index < cameras.size()) {
             cameras.remove(index);
             if (cameras.isEmpty()) {
-                activeCameraIndex = -1; // Если камер не осталось
+                activeCameraIndex = -1;
             } else if (index <= activeCameraIndex) {
-                activeCameraIndex = Math.max(0, activeCameraIndex - 1); // Смещаем активную камеру
+                activeCameraIndex = Math.max(0, activeCameraIndex - 1);
             }
         }
     }
