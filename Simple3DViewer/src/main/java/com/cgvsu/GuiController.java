@@ -98,10 +98,9 @@ public class GuiController {
 
             Color modelColor = modelColorPicker.getValue();
             Color backgroundColor = backgroundColorPicker.getValue();
+            Color fillColor = Color.LIGHTGRAY; // Цвет модели
 
             for (Model model : models) {
-                Color fillColor = texture == null ? Color.GREEN : getTextureColor(texture);
-
                 RenderEngine.render(
                         canvas.getGraphicsContext2D(),
                         activeCamera,
@@ -115,7 +114,9 @@ public class GuiController {
                         useTextureCheckBox.isSelected() ? texture : null,
                         fillColor,
                         drawWireframeCheckBox.isSelected(),
-                        useLightingCheckBox.isSelected()
+                        useLightingCheckBox.isSelected(),
+                        lightPosition, // Передаём позицию света
+                        lightColor // Передаём цвет света
                 );
             }
         } else {
@@ -226,7 +227,9 @@ public class GuiController {
                             texture,
                             texture == null ? Color.LIGHTGRAY : texColor,
                             drawWireframeCheckBox.isSelected(),
-                            useLightingCheckBox.isSelected()
+                            useLightingCheckBox.isSelected(),
+                            lightPosition,
+                            lightColor
                     );
                 }
             } else {
@@ -1070,4 +1073,35 @@ public class GuiController {
 
     @FXML
     private CheckBox useLightingCheckBox;
+
+    @FXML
+    private ColorPicker lightColorPicker;
+    @FXML
+    private TextField lightPositionXField;
+    @FXML
+    private TextField lightPositionYField;
+    @FXML
+    private TextField lightPositionZField;
+
+    private Vector3f lightPosition = new Vector3f(0, 0, 100);
+    private Color lightColor = Color.WHITE;
+
+    @FXML
+    private void handleLightColorChange(ActionEvent event) {
+        lightColor = lightColorPicker.getValue();
+        render();
+    }
+    @FXML
+    private void handleApplyLightPosition(ActionEvent event) {
+        try {
+            float posX = Float.parseFloat(lightPositionXField.getText());
+            float posY = Float.parseFloat(lightPositionYField.getText());
+            float posZ = Float.parseFloat(lightPositionZField.getText());
+
+            lightPosition = new Vector3f(posX, posY, posZ);
+            render();
+        } catch (NumberFormatException e) {
+            System.out.println("Ошибка: введите корректные числа для позиции света.");
+        }
+    }
 }

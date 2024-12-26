@@ -273,6 +273,34 @@
                 </VBox>
             </TitledPane>
 
+            <!-- Настройки света -->
+            <TitledPane text="Light Settings">
+                <VBox spacing="10" alignment="CENTER" layoutX="10" layoutY="10">
+                    <!-- Цвет света -->
+                    <HBox spacing="10">
+                        <Label text="Light Color:"/>
+                        <ColorPicker fx:id="lightColorPicker" onAction="#handleLightColorChange"/>
+                    </HBox>
+
+                    <!-- Позиция света -->
+                    <HBox spacing="10">
+                        <Label text="Position X:"/>
+                        <TextField fx:id="lightPositionXField" prefWidth="50"/>
+                    </HBox>
+                    <HBox spacing="10">
+                        <Label text="Position Y:"/>
+                        <TextField fx:id="lightPositionYField" prefWidth="50"/>
+                    </HBox>
+                    <HBox spacing="10">
+                        <Label text="Position Z:"/>
+                        <TextField fx:id="lightPositionZField" prefWidth="50"/>
+                    </HBox>
+
+                    <!-- Кнопка для применения позиции света -->
+                    <Button text="Apply Light Position" onAction="#handleApplyLightPosition"/>
+                </VBox>
+            </TitledPane>
+
             <!-- Камеры" -->
             <TitledPane text="Camera Settings">
                 <VBox fx:id="cameraControlsPanel" spacing="10" alignment="CENTER" layoutX="10" layoutY="10">

@@ -34,7 +34,9 @@ public class RenderEngine {
             final Image texture,
             Color fillColor,
             final boolean isWireframeEnabled,
-            final boolean useLighting
+            final boolean useLighting,
+            final Vector3f lightPosition,
+            final Color lightColor
     ) {
         graphicsContext.setStroke(modelColor);
         graphicsContext.setFill(backgroundColor);
@@ -50,7 +52,7 @@ public class RenderEngine {
         Matrix4f modelViewProjectionMatrix = Matrix4f.multiply(projectionMatrix, Matrix4f.multiply(viewMatrix, modelMatrix));
 
         if (isRasterizationEnabled) {
-            renderWithRasterization(graphicsContext, camera, mesh, width, height, modelViewProjectionMatrix, texture, fillColor, useLighting);
+            renderWithRasterization(graphicsContext, camera, mesh, width, height, modelViewProjectionMatrix, texture, fillColor, useLighting, lightPosition, lightColor);
         }
 
         if (isWireframeEnabled) {
@@ -70,7 +72,9 @@ public class RenderEngine {
             Matrix4f modelViewProjectionMatrix,
             Image texture,
             Color fillColor,
-            boolean useLighting
+            boolean useLighting,
+            Vector3f lightPosition,
+            Color lightColor
     ) {
         List<List<Float>> zBuffer = ZBuffer.createZBuffer(width, height);
         List<Vector3f> vertexNormals = NormalUtils.recalculateVertexNormals(mesh);
@@ -107,18 +111,23 @@ public class RenderEngine {
                 Vector2f t2 = textureCoords.get(i + 1);
                 Vector2f t3 = textureCoords.get(i + 2);
 
-                rasterizeTriangle(
+                TriangleRasterization.drawTriangle(
                         gc,
-                        v1, v2, v3,
-                        v1_3d, v2_3d, v3_3d,
-                        zBuffer,
-                        width, height,
+                        List.of(v1, v2, v3),
                         texture,
                         t1, t2, t3,
-                        vertexNormals,
+                        zBuffer,
+                        v1_3d, v2_3d, v3_3d,
+                        List.of(vertexNormals.get(polygon.getVertexIndices().get(0)),
+                                vertexNormals.get(polygon.getVertexIndices().get(i + 1)),
+                                vertexNormals.get(polygon.getVertexIndices().get(i + 2))),
                         camera,
                         fillColor,
-                        useLighting
+                        width,
+                        height,
+                        useLighting,
+                        lightPosition,
+                        lightColor
                 );
             }
         }
@@ -160,40 +169,6 @@ public class RenderEngine {
                         resultPoints.get(0).x,
                         resultPoints.get(0).y);
         }
-    }
-
-    private static void rasterizeTriangle(
-            GraphicsContext gc,
-            Vector2f v1, Vector2f v2, Vector2f v3,
-            Vector3f v1_3d, Vector3f v2_3d, Vector3f v3_3d,
-            List<List<Float>> zBuffer,
-            int width, int height,
-            Image texture,
-            Vector2f t1, Vector2f t2, Vector2f t3,
-            List<Vector3f> vertexNormals,
-            Camera camera,
-            Color fillColor,
-            boolean useLighting
-    ) {
-        ArrayList<Vector2f> triangle2D = new ArrayList<>();
-        triangle2D.add(v1);
-        triangle2D.add(v2);
-        triangle2D.add(v3);
-
-        TriangleRasterization.drawTriangle(
-                gc,
-                triangle2D,
-                texture,
-                t1, t2, t3,
-                zBuffer,
-                v1_3d, v2_3d, v3_3d,
-                vertexNormals,
-                camera,
-                fillColor,
-                width,
-                height,
-                useLighting
-        );
     }
 
     private static void highlightSelectedVertices(
