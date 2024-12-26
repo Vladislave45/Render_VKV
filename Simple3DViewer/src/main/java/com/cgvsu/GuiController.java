@@ -74,7 +74,6 @@ public class GuiController {
 
     private Timeline timeline;
 
-
     private List<Integer> selectedVertices = new ArrayList<>();
 
     //////
@@ -84,20 +83,17 @@ public class GuiController {
     /////////
 
     @FXML
-    private TextField frameDurationField; // Field for user to input duration
+    private TextField frameDurationField;
     private List<Frame> animationFrames = new ArrayList<>();
     private Timeline animationTimeline;
     @FXML
     private ListView<String> animationListView;
 
-
     @FXML
     private void initialize() {
 
-
         modelColorPicker.setValue(Color.BLACK);
         backgroundColorPicker.setValue(Color.WHITE);
-
 
         scaleXField.setText("1.0");
         scaleYField.setText("1.0");
@@ -116,11 +112,9 @@ public class GuiController {
         anchorPane.prefWidthProperty().addListener((ov, oldValue, newValue) -> canvas.setWidth(newValue.doubleValue()));
         anchorPane.prefHeightProperty().addListener((ov, oldValue, newValue) -> canvas.setHeight(newValue.doubleValue()));
 
-
         modelListView.getSelectionModel().selectedIndexProperty().addListener((obs, oldVal, newVal) -> {
             setActiveModel(newVal.intValue());
         });
-
 
         timeline = new Timeline(new KeyFrame(Duration.millis(33), event -> {
             double width = canvas.getWidth();
@@ -148,13 +142,10 @@ public class GuiController {
         timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();
 
-
-
         canvas.setOnMousePressed(event -> handleMousePressed(event));
         canvas.setOnMouseDragged(event -> handleMouseDragged(event));
         canvas.setOnMouseReleased(event -> handleMouseReleased(event));
         canvas.setOnScroll(event -> handleMouseScrolled(event)); // колесо
-
 
         canvas.setOnKeyPressed(event -> handleKeyPressed(event));
         canvas.setOnKeyReleased(event -> handleKeyReleased(event));
@@ -210,7 +201,6 @@ public class GuiController {
             System.out.println("Frame added.");
         }
     }
-
     @FXML
     private void onDeleteFrameButtonClick() {
         int selectedIndex = animationListView.getSelectionModel().getSelectedIndex();
@@ -222,8 +212,6 @@ public class GuiController {
             System.out.println("Кадр для удаления не выбран.");
         }
     }
-
-
     @FXML
     private void handleSetFrameDuration() {
         String durationText = frameDurationField.getText();
@@ -235,20 +223,17 @@ public class GuiController {
                 Frame selectedFrame = animationFrames.get(selectedIndex);
                 selectedFrame.setDuration(duration); // обновить длительность выбранного кадра
 
-                // Обновить отображение в ListView
+                // обновить в листе
                 animationListView.getItems().set(selectedIndex,
                         "Frame " + (selectedIndex + 1) + " Duration: " + duration + " ms (mili sec)");
-
                 System.out.println("Продолжительность кадра " + (selectedIndex + 1) + ": " + duration + " мсек");
             } else {
                 System.out.println("Кадр для изменения длительности не выбран.");
             }
-
         } catch (NumberFormatException e) {
             System.out.println("Неверный ввод для длительности.");
         }
     }
-
     private Frame createFrameFromModel(Model activeModel) {
         float scaleX = activeModel.getScale().getX();
         float scaleY = activeModel.getScale().getY();
@@ -266,17 +251,14 @@ public class GuiController {
         return new Frame(scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ,
                 translateX, translateY, translateZ, duration);
     }
-
     @FXML
     private void onPlayAnimationButtonClick() {
         if (animationFrames.isEmpty()) return;
-
 
         // стоп
         if (animationTimeline != null) {
             animationTimeline.stop();
         }
-
         animationTimeline = new Timeline();
 
         for (int i = 0; i < animationFrames.size() - 1; i++) {
@@ -293,10 +275,8 @@ public class GuiController {
                 animationTimeline.getKeyFrames().add(keyFrame);
             }
         }
-
         animationTimeline.play();
     }
-
     private void interpolateFrames(Frame startFrame, Frame endFrame, float t) {
         float scaleX = lerp(startFrame.getScaleX(), endFrame.getScaleX(), t);
         float scaleY = lerp(startFrame.getScaleY(), endFrame.getScaleY(), t);
@@ -424,7 +404,6 @@ public class GuiController {
                 closestVertexIndex = i;
             }
         }
-
         return closestVertexIndex;
     }
 
@@ -554,24 +533,20 @@ public class GuiController {
     public void handleCameraForward(ActionEvent actionEvent) { // W
         camera.movePosition(new Vector3f(0, 0, -TRANSLATION));
     }
-
     @FXML
     public void handleCameraBackward(ActionEvent actionEvent) { // S
         camera.movePosition(new Vector3f(0, 0, TRANSLATION));
     }
-
     @FXML
     public void handleCameraLeft(ActionEvent actionEvent) { // A
         camera.movePositionAndTarget(new Vector3f(TRANSLATION, 0, 0));
     }
-
     @FXML
     public void handleCameraRight(ActionEvent actionEvent) { // D
         camera.movePositionAndTarget(new Vector3f(-TRANSLATION, 0, 0));
     }
 
     // трансформации
-
     @FXML
     public void applyScale(ActionEvent event) {
         try {
@@ -581,7 +556,6 @@ public class GuiController {
             System.out.println("Ошибка: введено некорректное значение для Scale.");
         }
     }
-
     @FXML
     public void applyRotation(ActionEvent event) {
         try {
@@ -591,7 +565,6 @@ public class GuiController {
             System.out.println("Ошибка: введено некорректное значение для Rotation.");
         }
     }
-
     @FXML
     public void applyTranslation(ActionEvent event) {
         try {
@@ -608,12 +581,10 @@ public class GuiController {
             Vector3f scale = activeModel.getScale();
             activeModel.setScale(new Vector3f(scale.getX() + SCALE, scale.getY(), scale.getZ()));
             updateTransformFields(activeModel);
-
         } else {
             System.out.println("Нет активной модели для трансформации");
         }
     }
-
     @FXML
     public void handleModelScaleXNegative(ActionEvent actionEvent) {
         if (activeModelIndex != -1) {
@@ -621,12 +592,10 @@ public class GuiController {
             Vector3f scale = activeModel.getScale();
             activeModel.setScale(new Vector3f(scale.getX() - SCALE, scale.getY(), scale.getZ()));
             updateTransformFields(activeModel);
-
         } else {
             System.out.println("Нет активной модели для трансформации");
         }
     }
-
     @FXML
     public void handleModelScaleY(ActionEvent actionEvent) {
         if (activeModelIndex != -1) {
@@ -634,12 +603,10 @@ public class GuiController {
             Vector3f scale = activeModel.getScale();
             activeModel.setScale(new Vector3f(scale.getX(), scale.getY() + SCALE, scale.getZ()));
             updateTransformFields(activeModel);
-
         } else {
             System.out.println("Нет активной модели для трансформации");
         }
     }
-
     @FXML
     public void handleModelScaleYNegative(ActionEvent actionEvent) {
         if (activeModelIndex != -1) {
@@ -647,12 +614,10 @@ public class GuiController {
             Vector3f scale = activeModel.getScale();
             activeModel.setScale(new Vector3f(scale.getX(), scale.getY() - SCALE, scale.getZ()));
             updateTransformFields(activeModel);
-
         } else {
             System.out.println("Нет активной модели для трансформации");
         }
     }
-
     @FXML
     public void handleModelScaleZ(ActionEvent actionEvent) {
         if (activeModelIndex != -1) {
@@ -660,12 +625,10 @@ public class GuiController {
             Vector3f scale = activeModel.getScale();
             activeModel.setScale(new Vector3f(scale.getX(), scale.getY(), scale.getZ() + SCALE));
             updateTransformFields(activeModel);
-
         } else {
             System.out.println("Нет активной модели для трансформации");
         }
     }
-
     @FXML
     public void handleModelScaleZNegative(ActionEvent actionEvent) {
         if (activeModelIndex != -1) {
@@ -673,12 +636,10 @@ public class GuiController {
             Vector3f scale = activeModel.getScale();
             activeModel.setScale(new Vector3f(scale.getX(), scale.getY(), scale.getZ() - SCALE));
             updateTransformFields(activeModel);
-
         } else {
             System.out.println("Нет активной модели для трансформации");
         }
     }
-
     @FXML
     public void handleModelRotateX(ActionEvent actionEvent) {
         if (activeModelIndex != -1) {
@@ -686,12 +647,10 @@ public class GuiController {
             Vector3f rotation = activeModel.getRotation();
             activeModel.setRotation(new Vector3f(rotation.getX() + ROTATION, rotation.getY(), rotation.getZ()));
             updateTransformFields(activeModel);
-
         } else {
             System.out.println("Нет активной модели для трансформации");
         }
     }
-
     @FXML
     public void handleModelRotateXNegative(ActionEvent actionEvent) {
         if (activeModelIndex != -1) {
@@ -699,12 +658,10 @@ public class GuiController {
             Vector3f rotation = activeModel.getRotation();
             activeModel.setRotation(new Vector3f(rotation.getX() - ROTATION, rotation.getY(), rotation.getZ()));
             updateTransformFields(activeModel);
-
         } else {
             System.out.println("Нет активной модели для трансформации");
         }
     }
-
     @FXML
     public void handleModelRotateY(ActionEvent actionEvent) {
         if (activeModelIndex != -1) {
@@ -712,12 +669,10 @@ public class GuiController {
             Vector3f rotation = activeModel.getRotation();
             activeModel.setRotation(new Vector3f(rotation.getX(), rotation.getY() + ROTATION, rotation.getZ()));
             updateTransformFields(activeModel);
-
         } else {
             System.out.println("Нет активной модели для трансформации");
         }
     }
-
     @FXML
     public void handleModelRotateYNegative(ActionEvent actionEvent) {
         if (activeModelIndex != -1) {
@@ -725,12 +680,10 @@ public class GuiController {
             Vector3f rotation = activeModel.getRotation();
             activeModel.setRotation(new Vector3f(rotation.getX(), rotation.getY() - ROTATION, rotation.getZ()));
             updateTransformFields(activeModel);
-
         } else {
             System.out.println("Нет активной модели для трансформации");
         }
     }
-
     @FXML
     public void handleModelRotateZ(ActionEvent actionEvent) {
         if (activeModelIndex != -1) {
@@ -738,12 +691,10 @@ public class GuiController {
             Vector3f rotation = activeModel.getRotation();
             activeModel.setRotation(new Vector3f(rotation.getX(), rotation.getY(), rotation.getZ() + ROTATION));
             updateTransformFields(activeModel);
-
         } else {
             System.out.println("Нет активной модели для трансформации");
         }
     }
-
     @FXML
     public void handleModelRotateZNegative(ActionEvent actionEvent) {
         if (activeModelIndex != -1) {
@@ -751,12 +702,10 @@ public class GuiController {
             Vector3f rotation = activeModel.getRotation();
             activeModel.setRotation(new Vector3f(rotation.getX(), rotation.getY(), rotation.getZ() - ROTATION));
             updateTransformFields(activeModel);
-
         } else {
             System.out.println("Нет активной модели для трансформации");
         }
     }
-
     @FXML
     public void handleModelTranslateX(ActionEvent actionEvent) {
         if (activeModelIndex != -1) {
@@ -764,12 +713,10 @@ public class GuiController {
             Vector3f translation = activeModel.getTranslation();
             activeModel.setTranslation(new Vector3f(translation.getX() + TRANSLATION, translation.getY(), translation.getZ()));
             updateTransformFields(activeModel);
-
         } else {
             System.out.println("Нет активной модели для трансформации");
         }
     }
-
     @FXML
     public void handleModelTranslateXNegative(ActionEvent actionEvent) {
         if (activeModelIndex != -1) {
@@ -777,12 +724,10 @@ public class GuiController {
             Vector3f translation = activeModel.getTranslation();
             activeModel.setTranslation(new Vector3f(translation.getX() - TRANSLATION, translation.getY(), translation.getZ()));
             updateTransformFields(activeModel);
-
         } else {
             System.out.println("Нет активной модели для трансформации");
         }
     }
-
     @FXML
     public void handleModelTranslateY(ActionEvent actionEvent) {
         if (activeModelIndex != -1) {
@@ -790,12 +735,10 @@ public class GuiController {
             Vector3f translation = activeModel.getTranslation();
             activeModel.setTranslation(new Vector3f(translation.getX(), translation.getY() + TRANSLATION, translation.getZ()));
             updateTransformFields(activeModel);
-
         } else {
             System.out.println("Нет активной модели для трансформации");
         }
     }
-
     @FXML
     public void handleModelTranslateYNegative(ActionEvent actionEvent) {
         if (activeModelIndex != -1) {
@@ -803,12 +746,10 @@ public class GuiController {
             Vector3f translation = activeModel.getTranslation();
             activeModel.setTranslation(new Vector3f(translation.getX(), translation.getY() - TRANSLATION, translation.getZ()));
             updateTransformFields(activeModel);
-
         } else {
             System.out.println("Нет активной модели для трансформации");
         }
     }
-
     @FXML
     public void handleModelTranslateZ(ActionEvent actionEvent) {
         if (activeModelIndex != -1) {
@@ -816,12 +757,10 @@ public class GuiController {
             Vector3f translation = activeModel.getTranslation();
             activeModel.setTranslation(new Vector3f(translation.getX(), translation.getY(), translation.getZ() + TRANSLATION));
             updateTransformFields(activeModel);
-
         } else {
             System.out.println("Нет активной модели для трансформации");
         }
     }
-
     @FXML
     public void handleModelTranslateZNegative(ActionEvent actionEvent) {
         if (activeModelIndex != -1) {
@@ -829,7 +768,6 @@ public class GuiController {
             Vector3f translation = activeModel.getTranslation();
             activeModel.setTranslation(new Vector3f(translation.getX(), translation.getY(), translation.getZ() - TRANSLATION));
             updateTransformFields(activeModel);
-
         } else {
             System.out.println("Нет активной модели для трансформации");
         }
