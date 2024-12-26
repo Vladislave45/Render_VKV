@@ -10,6 +10,9 @@ import com.cgvsu.math.matrix.*;
 
 import java.util.Arrays;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class GraphicConveyorTest{
 
     @Test
@@ -808,4 +811,27 @@ public class GraphicConveyorTest{
         Matrix4f excepted = GraphicConveyor.rotateScaleTranslate(1,1,1,0,0,0,0,0,0);
         Assertions.assertTrue(actual.equals(excepted));
     }
+
+    @Test
+    public void testPerspectiveMatrix() {
+        float fov = (float) Math.toRadians(90.0);
+        float aspectRatio = 16.0f / 9.0f;
+        float nearPlane = 0.1f;
+        float farPlane = 100.0f;
+
+        float tangentMinusOnDegree = (float) (1.0F / (Math.tan(fov * 0.5F)));
+        float expected00 = tangentMinusOnDegree / aspectRatio;
+        float expected11 = (farPlane + nearPlane) / (farPlane - nearPlane);
+        float expected22 = 2 * (nearPlane * farPlane) / (farPlane - nearPlane);
+
+        Matrix4f result = GraphicConveyor.perspective(fov, aspectRatio, nearPlane, farPlane);
+
+        assertEquals(expected00, result.getValue(0, 0), 0.0001);
+        assertEquals(tangentMinusOnDegree, result.getValue(1, 1), 0.0001);
+        assertEquals(expected11, result.getValue(2, 2), 0.0001);
+        assertEquals(expected22, result.getValue(2, 3), 0.0001);
+        assertEquals(1.0F, result.getValue(3, 2), 0.0001);
+        assertEquals(1.0F, result.getValue(3, 3), 0.0001);
+    }
+
 }

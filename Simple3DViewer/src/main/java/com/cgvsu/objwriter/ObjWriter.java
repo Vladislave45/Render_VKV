@@ -23,7 +23,7 @@ public class ObjWriter {
 
         if (applyTransformations) {
             for (Vector3f vertex : vertices) {
-                Vector3f transformedVertex = applyTransformations(vertex, model.getScale(), model.getRotation(), model.getTranslation());
+                Vector3f transformedVertex = GraphicConveyor.applyTransformations(vertex, model.getScale(), model.getRotation(), model.getTranslation());
                 sb.append("v ").append(transformedVertex.getX()).append(" ").append(transformedVertex.getY()).append(" ").append(transformedVertex.getZ()).append("\n");
             }
         } else {
@@ -43,20 +43,4 @@ public class ObjWriter {
         return sb.toString();
     }
 
-    private static Vector3f applyTransformations(Vector3f vertex, Vector3f scale, Vector3f rotation, Vector3f translation) {
-        // применить масштабирование
-        Matrix4f scaleMatrix = GraphicConveyor.scaleMatrix4f(scale.getX(), scale.getY(), scale.getZ());
-        Vector4f scaledVertex = scaleMatrix.multiply(new Vector4f(vertex.getX(), vertex.getY(), vertex.getZ(), 1.0f));
-
-        // применить вращение
-        Matrix4f rotationMatrix = GraphicConveyor.rotateMatrix4f(rotation.getX(), rotation.getY(), rotation.getZ());
-        Vector4f rotatedVertex = rotationMatrix.multiply(scaledVertex);
-
-        // применить перемещение
-        Matrix4f translationMatrix = GraphicConveyor.translationMatrix4f(translation.getX(), translation.getY(), translation.getZ());
-        Vector4f transformedVertex = translationMatrix.multiply(rotatedVertex);
-
-        // преобразовать обратно в Vector3f
-        return new Vector3f(transformedVertex.getX(), transformedVertex.getY(), transformedVertex.getZ());
-    }
 }

@@ -1,6 +1,7 @@
 package com.cgvsu.render_engine;
 
 import com.cgvsu.math.Vector2f;
+import com.cgvsu.math.Vector4f;
 import com.cgvsu.math.matrix.Matrix4f;
 import com.cgvsu.math.Vector3f;
 
@@ -80,6 +81,23 @@ public class GraphicConveyor {
         return Matrix4f.multiply(
                 translationMatrix4f(translationX,translationY,translationZ),
                 Matrix4f.multiply(rotateMatrix4f(angleX,angleY,angleZ), scaleMatrix4f(scaleX,scaleY,scaleZ)));
+    }
+
+    public static Vector3f applyTransformations(Vector3f vertex, Vector3f scale, Vector3f rotation, Vector3f translation) {
+        // применить масштабирование
+        Matrix4f scaleMatrix = GraphicConveyor.scaleMatrix4f(scale.getX(), scale.getY(), scale.getZ());
+        Vector4f scaledVertex = scaleMatrix.multiply(new Vector4f(vertex.getX(), vertex.getY(), vertex.getZ(), 1.0f));
+
+        // применить вращение
+        Matrix4f rotationMatrix = GraphicConveyor.rotateMatrix4f(rotation.getX(), rotation.getY(), rotation.getZ());
+        Vector4f rotatedVertex = rotationMatrix.multiply(scaledVertex);
+
+        // применить перемещение
+        Matrix4f translationMatrix = GraphicConveyor.translationMatrix4f(translation.getX(), translation.getY(), translation.getZ());
+        Vector4f transformedVertex = translationMatrix.multiply(rotatedVertex);
+
+        // преобразовать обратно в Vector3f
+        return new Vector3f(transformedVertex.getX(), transformedVertex.getY(), transformedVertex.getZ());
     }
 
     public static Matrix4f rotateScaleTranslate() {
