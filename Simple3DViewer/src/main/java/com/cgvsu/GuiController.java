@@ -633,6 +633,7 @@ public class GuiController {
             System.out.println("Ошибка: введено некорректное значение для Translation.");
         }
     }
+
     @FXML
     public void handleModelScaleX(ActionEvent actionEvent) {
         if (activeModelIndex != -1) {
@@ -918,8 +919,10 @@ public class GuiController {
             System.out.println("Ошибка: введите корректные числа для трансформации.");
         }
     }
+
     private boolean isTriangulationApplied = false;
     private Model originalModel;
+
     @FXML
     private void handleTriangulate(ActionEvent event) {
         if (!isTriangulationApplied) {
@@ -938,6 +941,7 @@ public class GuiController {
             System.out.println("Триангуляция уже была применена");
         }
     }
+
     @FXML
     private void handleDisableTriangulate(ActionEvent event) {
         isTriangulationEnabled = false;
@@ -948,12 +952,14 @@ public class GuiController {
             timeline.playFromStart();
         }
     }
+
     @FXML
     private void handleEnableRasterization(ActionEvent event) {
         isRasterizationEnabled = true;
         System.out.println("Растеризация включена");
         timeline.playFromStart();
     }
+
     @FXML
     private void handleDisableRasterization(ActionEvent event) {
         isRasterizationEnabled = false;
@@ -962,6 +968,7 @@ public class GuiController {
     }
 
     private Image texture;
+
     @FXML
     private void onLoadTextureMenuItemClick() {
         FileChooser fileChooser = new FileChooser();
@@ -1091,6 +1098,7 @@ public class GuiController {
         lightColor = lightColorPicker.getValue();
         render();
     }
+
     @FXML
     private void handleApplyLightPosition(ActionEvent event) {
         try {
