@@ -9,22 +9,19 @@ import java.util.List;
 
 public class NormalUtils {
 
-    //Пересчитывает нормали вершин на основе нормалей полигонов.
     public static List<Vector3f> recalculateVertexNormals(Model model) {
         List<Vector3f> vertexNormals = new ArrayList<>();
         for (int i = 0; i < model.vertices.size(); i++) {
-            vertexNormals.add(new Vector3f(0, 0, 0)); // Инициализация нулевыми нормалями
+            vertexNormals.add(new Vector3f(0, 0, 0));
         }
 
-        // Пересчитываем нормали вершин
         for (Polygon polygon : model.polygons) {
             Vector3f polygonNormal = computePolygonNormal(polygon, model.vertices);
             for (int vertexIndex : polygon.getVertexIndices()) {
-                vertexNormals.get(vertexIndex).add(polygonNormal); // Суммируем нормали граней
+                vertexNormals.get(vertexIndex).add(polygonNormal);
             }
         }
 
-        // Нормализуем нормали вершин
         for (Vector3f normal : vertexNormals) {
             normal.normalize();
         }
@@ -32,7 +29,6 @@ public class NormalUtils {
         return vertexNormals;
     }
 
-    //Вычисляет нормаль полигона.
     public static Vector3f computePolygonNormal(Polygon polygon, List<Vector3f> vertices) {
         List<Integer> vertexIndices = polygon.getVertexIndices();
         if (vertexIndices.size() < 3) {

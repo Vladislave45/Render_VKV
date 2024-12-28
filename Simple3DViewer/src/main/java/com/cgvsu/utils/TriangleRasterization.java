@@ -27,24 +27,21 @@ public class TriangleRasterization {
             int width,
             int height,
             boolean useLighting,
-            List<Light> lights, // Передаем список источников света
+            List<Light> lights,
             Model model
     ) {
         Vector2f v1 = triangle.get(0);
         Vector2f v2 = triangle.get(1);
         Vector2f v3 = triangle.get(2);
 
-        // Матрица модели
         Matrix4f modelMatrix = GraphicConveyor.rotateScaleTranslate(
                 model.getScale().getX(), model.getScale().getY(), model.getScale().getZ(),
                 model.getRotation().getX(), model.getRotation().getY(), model.getRotation().getZ(),
                 model.getTranslation().getX(), model.getTranslation().getY(), model.getTranslation().getZ()
         );
 
-        // Обратная транспонированная матрица для нормалей
         Matrix4f normalMatrix = modelMatrix.inverse().transpose();
 
-        // Растеризация треугольника
         int minX = (int) Math.min(v1.getX(), Math.min(v2.getX(), v3.getX()));
         int maxX = (int) Math.max(v1.getX(), Math.max(v2.getX(), v3.getX()));
         int minY = (int) Math.min(v1.getY(), Math.min(v2.getY(), v3.getY()));
@@ -56,24 +53,18 @@ public class TriangleRasterization {
                     float depth = interpolateDepth(x, y, v1, v2, v3, v1_3d, v2_3d, v3_3d);
 
                     if (ZBuffer.testBuffer(x, y, depth, zBuffer)) {
-                        // Интерполяция текстурных координат
                         float u = interpolateTexture(x, y, v1, v2, v3, t1.getX(), t2.getX(), t3.getX());
                         float v = interpolateTexture(x, y, v1, v2, v3, t1.getY(), t2.getY(), t3.getY());
 
-                        // Интерполяция нормали
                         Vector3f normal = interpolateNormal(x, y, v1, v2, v3, vertexNormals.get(0), vertexNormals.get(1), vertexNormals.get(2));
 
-                        // Преобразование нормали в мировые координаты
                         Vector3f transformedNormal = Matrix4f.multiply(normalMatrix, normal).normalize();
 
-                        // Интерполяция позиции вершины в мировых координатах
                         Vector3f vertexPosition = interpolatePosition(x, y, v1, v2, v3, v1_3d, v2_3d, v3_3d);
 
-                        // Получаем цвет текстуры или используем цвет по умолчанию
                         Color texColor = getTextureColor(texture, u, v);
                         Color baseColor = texture == null ? fillColor : texColor;
 
-                        // Расчет финального цвета с учетом освещения
                         Color finalColor;
                         if (useLighting) {
                             finalColor = calculateLighting(transformedNormal, vertexPosition, baseColor, lights);
@@ -81,7 +72,6 @@ public class TriangleRasterization {
                             finalColor = baseColor;
                         }
 
-                        // Устанавливаем цвет пикселя
                         gc.getPixelWriter().setColor(x, y, finalColor);
                     }
                 }
@@ -95,7 +85,7 @@ public class TriangleRasterization {
 
     private static float interpolateTexture(int x, int y, Vector2f v1, Vector2f v2, Vector2f v3, float t1, float t2, float t3) {
         float area = edgeFunction(v1, v2, v3);
-        if (area == 0) return 0; // Защита от деления на ноль
+        if (area == 0) return 0;
 
         float w1 = edgeFunction(new Vector2f(x, y), v2, v3) / area;
         float w2 = edgeFunction(v1, new Vector2f(x, y), v3) / area;
@@ -107,7 +97,6 @@ public class TriangleRasterization {
     private static Color getTextureColor(Image texture, float u, float v) {
         if (texture == null) return Color.WHITE;
 
-        // Инвертируем координату Y, чтобы учесть разницу в направлении осей
         float invertedV = 1 - v;
 
         int x = (int) (u * (texture.getWidth() - 1));
@@ -117,16 +106,13 @@ public class TriangleRasterization {
     }
 
     private static Color calculateLighting(Vector3f normal, Vector3f vertexPosition, Color baseColor, List<Light> lights) {
-        Color finalColor = Color.BLACK; // Начальный цвет (черный)
+        Color finalColor = Color.BLACK;
 
         for (Light light : lights) {
-            // Направление света: от вершины к источнику света
             Vector3f lightDirection = Vector3f.deduct(light.getPosition(), vertexPosition).normalize();
 
-            // Косинус угла между нормалью и направлением света
             float dot = Math.max(0, normal.dot(lightDirection));
 
-            // Вклад текущего источника света
             Color lightContribution = new Color(
                     baseColor.getRed() * light.getColor().getRed() * dot,
                     baseColor.getGreen() * light.getColor().getGreen() * dot,
@@ -134,7 +120,6 @@ public class TriangleRasterization {
                     baseColor.getOpacity()
             );
 
-            // Суммируем вклад всех источников света
             finalColor = new Color(
                     Math.min(finalColor.getRed() + lightContribution.getRed(), 1.0),
                     Math.min(finalColor.getGreen() + lightContribution.getGreen(), 1.0),
@@ -159,7 +144,7 @@ public class TriangleRasterization {
 
     private static float interpolateDepth(int x, int y, Vector2f v1, Vector2f v2, Vector2f v3, Vector3f v1_3d, Vector3f v2_3d, Vector3f v3_3d) {
         float area = edgeFunction(v1, v2, v3);
-        if (area == 0) return 0; // Защита от деления на ноль
+        if (area == 0) return 0;
 
         float w1 = edgeFunction(new Vector2f(x, y), v2, v3) / area;
         float w2 = edgeFunction(v1, new Vector2f(x, y), v3) / area;

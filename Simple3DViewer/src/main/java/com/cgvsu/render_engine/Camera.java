@@ -40,7 +40,7 @@ public class Camera {
     public void movePositionAndTarget(final Vector3f translation) {
         this.position.add(translation);
         this.target.add(translation);
-        this.lightPosition.add(translation); // Обновляем позицию источника света
+        this.lightPosition.add(translation);
     }
 
     public void setPosition(final Vector3f position) {

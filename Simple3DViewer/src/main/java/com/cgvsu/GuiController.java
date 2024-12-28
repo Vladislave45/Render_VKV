@@ -89,10 +89,8 @@ public class GuiController {
         double width = canvas.getWidth();
         double height = canvas.getHeight();
 
-        // Очистка canvas
         canvas.getGraphicsContext2D().clearRect(0, 0, width, height);
 
-        // Инициализация буфера глубины
         zBuffer = ZBuffer.createZBuffer((int) width, (int) height);
 
         Camera activeCamera = cameraManager.getActiveCamera();
@@ -101,7 +99,7 @@ public class GuiController {
 
             Color modelColor = modelColorPicker.getValue();
             Color backgroundColor = backgroundColorPicker.getValue();
-            Color fillColor = Color.LIGHTGRAY; // Цвет модели
+            Color fillColor = Color.LIGHTGRAY;
 
             for (Model model : models) {
                 RenderEngine.render(
@@ -118,8 +116,8 @@ public class GuiController {
                         fillColor,
                         drawWireframeCheckBox.isSelected(),
                         useLightingCheckBox.isSelected(),
-                        lights, // Передаем список источников света
-                        zBuffer // Передаем буфер глубины
+                        lights,
+                        zBuffer
                 );
             }
         } else {
@@ -129,11 +127,9 @@ public class GuiController {
 
     @FXML
     private void initialize() {
-        // Инициализация источников света
-        lights.add(new Light(new Vector3f(0, 0, 100), Color.WHITE)); // Добавляем начальный источник света
-        updateLightComboBox(); // Обновляем ComboBox
+        lights.add(new Light(new Vector3f(0, 0, 100), Color.WHITE));
+        updateLightComboBox();
 
-        // Остальная инициализация
         canvas.setFocusTraversable(true);
         canvas.requestFocus();
 
@@ -234,7 +230,7 @@ public class GuiController {
                             texture == null ? Color.LIGHTGRAY : texColor,
                             drawWireframeCheckBox.isSelected(),
                             useLightingCheckBox.isSelected(),
-                            lights, // Передаем список источников света
+                            lights,
                             zBuffer
                     );
                 }
@@ -286,7 +282,6 @@ public class GuiController {
 
     @FXML
     private void handleKeyPressed(KeyEvent event) {
-        // Игнорируем события, если фокус находится на текстовых полях
         if (cameraPositionXField.isFocused() || cameraPositionYField.isFocused() || cameraPositionZField.isFocused()) {
             return;
         }
@@ -946,7 +941,6 @@ public class GuiController {
     @FXML
     private void handleTriangulationCheckBox(ActionEvent event) {
         if (enableTriangulationCheckBox.isSelected()) {
-            // Включение триангуляции
             if (!isTriangulationApplied) {
                 isTriangulationEnabled = true;
                 System.out.println("Триангуляция включена");
@@ -961,7 +955,6 @@ public class GuiController {
                 }
             }
         } else {
-            // Отключение триангуляции
             isTriangulationEnabled = false;
             isTriangulationApplied = false;
             System.out.println("Триангуляция отключена");
@@ -1035,7 +1028,6 @@ public class GuiController {
             cameraManager.setActiveCamera(selectedIndex);
             updateActiveCameraLabel();
 
-            // Обновляем поля с координатами камеры
             Camera activeCamera = cameraManager.getActiveCamera();
             if (activeCamera != null) {
                 Vector3f position = activeCamera.getPosition();
@@ -1095,9 +1087,6 @@ public class GuiController {
     @FXML
     private TextField lightPositionZField;
 
-    private Vector3f lightPosition = new Vector3f(0, 0, 100);
-    private Color lightColor = Color.WHITE;
-
     private List<Light> lights = new ArrayList<>();
     private int activeLightIndex = 0;
 
@@ -1118,7 +1107,6 @@ public class GuiController {
         updateLightFields();
     }
 
-    // Обновление полей с данными активного источника света
     private void updateLightFields() {
         Light activeLight = lights.get(activeLightIndex);
         lightColorPicker.setValue(activeLight.getColor());

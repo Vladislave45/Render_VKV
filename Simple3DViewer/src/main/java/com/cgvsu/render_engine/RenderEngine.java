@@ -73,7 +73,7 @@ public class RenderEngine {
             Image texture,
             Color fillColor,
             boolean useLighting,
-            List<Light> lights // Принимаем список источников света
+            List<Light> lights
     ) {
         List<List<Float>> zBuffer = ZBuffer.createZBuffer(width, height);
         List<Vector3f> vertexNormals = NormalUtils.recalculateVertexNormals(mesh);
@@ -125,8 +125,8 @@ public class RenderEngine {
                         width,
                         height,
                         useLighting,
-                        lights, // Передаем список источников света
-                        mesh // Передаем объект Model
+                        lights,
+                        mesh
                 );
             }
         }
