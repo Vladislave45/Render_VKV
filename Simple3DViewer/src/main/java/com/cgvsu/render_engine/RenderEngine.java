@@ -35,7 +35,8 @@ public class RenderEngine {
             Color fillColor,
             final boolean isWireframeEnabled,
             final boolean useLighting,
-            final List<Light> lights // Принимаем список источников света
+            final List<Light> lights,
+            List<List<Float>> zBuffer
     ) {
         graphicsContext.setStroke(modelColor);
         graphicsContext.setFill(backgroundColor);

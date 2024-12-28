@@ -10,6 +10,7 @@ import com.cgvsu.objreader.ObjReader;
 import com.cgvsu.objwriter.ObjWriter;
 import com.cgvsu.render_engine.*;
 import com.cgvsu.utils.Triangulation;
+import com.cgvsu.utils.ZBuffer;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -67,6 +68,8 @@ public class GuiController {
     @FXML
     private TextField rotationStepField;
 
+    public List<List<Float>> zBuffer;
+
     private Camera camera = new Camera(
             new Vector3f(0, 0, 100),
             new Vector3f(0, 0, 0),
@@ -86,7 +89,11 @@ public class GuiController {
         double width = canvas.getWidth();
         double height = canvas.getHeight();
 
+        // Очистка canvas
         canvas.getGraphicsContext2D().clearRect(0, 0, width, height);
+
+        // Инициализация буфера глубины
+        zBuffer = ZBuffer.createZBuffer((int) width, (int) height);
 
         Camera activeCamera = cameraManager.getActiveCamera();
         if (activeCamera != null) {
@@ -100,7 +107,7 @@ public class GuiController {
                 RenderEngine.render(
                         canvas.getGraphicsContext2D(),
                         activeCamera,
-                        model, // Передаем модель
+                        model,
                         (int) width,
                         (int) height,
                         selectedVertices,
@@ -111,7 +118,8 @@ public class GuiController {
                         fillColor,
                         drawWireframeCheckBox.isSelected(),
                         useLightingCheckBox.isSelected(),
-                        lights // Передаем список источников света
+                        lights, // Передаем список источников света
+                        zBuffer // Передаем буфер глубины
                 );
             }
         } else {
@@ -226,7 +234,8 @@ public class GuiController {
                             texture == null ? Color.LIGHTGRAY : texColor,
                             drawWireframeCheckBox.isSelected(),
                             useLightingCheckBox.isSelected(),
-                            lights // Передаем список источников света
+                            lights, // Передаем список источников света
+                            zBuffer
                     );
                 }
             } else {
@@ -251,6 +260,8 @@ public class GuiController {
         drawWireframeCheckBox.setSelected(true);
         useTextureCheckBox.setSelected(false);
         useLightingCheckBox.setSelected(true);
+        enableRasterizationCheckBox.setSelected(isRasterizationEnabled);
+        enableTriangulationCheckBox.setSelected(isTriangulationEnabled);
 
         useTextureCheckBox.setOnAction(this::handleUseTexture);
         useLightingCheckBox.setOnAction(this::handleUseLighting);
@@ -921,47 +932,44 @@ public class GuiController {
     private Model originalModel;
 
     @FXML
-    private void handleTriangulate(ActionEvent event) {
-        if (!isTriangulationApplied) {
-            isTriangulationEnabled = true;
-            System.out.println("Триангуляция включена");
-            if (activeModelIndex != -1) {
-                Model activeModel = models.get(activeModelIndex);
-                originalModel = new Model();
-                originalModel.vertices = new ArrayList<>(activeModel.vertices);
-                originalModel.polygons = new ArrayList<>(activeModel.polygons);
-                models.set(activeModelIndex, Triangulation.getTriangulatedModel(activeModel));
-                isTriangulationApplied = true;
-                timeline.playFromStart();
+    private CheckBox enableRasterizationCheckBox;
+    @FXML
+    private CheckBox enableTriangulationCheckBox;
+
+    @FXML
+    private void handleRasterizationCheckBox(ActionEvent event) {
+        isRasterizationEnabled = enableRasterizationCheckBox.isSelected();
+        System.out.println("Растеризация " + (isRasterizationEnabled ? "включена" : "отключена"));
+        render();
+    }
+
+    @FXML
+    private void handleTriangulationCheckBox(ActionEvent event) {
+        if (enableTriangulationCheckBox.isSelected()) {
+            // Включение триангуляции
+            if (!isTriangulationApplied) {
+                isTriangulationEnabled = true;
+                System.out.println("Триангуляция включена");
+                if (activeModelIndex != -1) {
+                    Model activeModel = models.get(activeModelIndex);
+                    originalModel = new Model();
+                    originalModel.vertices = new ArrayList<>(activeModel.vertices);
+                    originalModel.polygons = new ArrayList<>(activeModel.polygons);
+                    models.set(activeModelIndex, Triangulation.getTriangulatedModel(activeModel));
+                    isTriangulationApplied = true;
+                    timeline.playFromStart();
+                }
             }
         } else {
-            System.out.println("Триангуляция уже была применена");
+            // Отключение триангуляции
+            isTriangulationEnabled = false;
+            isTriangulationApplied = false;
+            System.out.println("Триангуляция отключена");
+            if (activeModelIndex != -1 && originalModel != null) {
+                models.set(activeModelIndex, originalModel);
+                timeline.playFromStart();
+            }
         }
-    }
-
-    @FXML
-    private void handleDisableTriangulate(ActionEvent event) {
-        isTriangulationEnabled = false;
-        isTriangulationApplied = false;
-        System.out.println("Триангуляция отключена");
-        if (activeModelIndex != -1 && originalModel != null) {
-            models.set(activeModelIndex, originalModel);
-            timeline.playFromStart();
-        }
-    }
-
-    @FXML
-    private void handleEnableRasterization(ActionEvent event) {
-        isRasterizationEnabled = true;
-        System.out.println("Растеризация включена");
-        timeline.playFromStart();
-    }
-
-    @FXML
-    private void handleDisableRasterization(ActionEvent event) {
-        isRasterizationEnabled = false;
-        System.out.println("Растеризация отключена");
-        timeline.playFromStart();
     }
 
     private Image texture;
