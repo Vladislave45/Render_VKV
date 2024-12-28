@@ -5,6 +5,7 @@ import com.cgvsu.math.Vector3f;
 import com.cgvsu.math.matrix.Matrix4f;
 import com.cgvsu.render_engine.Camera;
 import com.cgvsu.render_engine.GraphicConveyor;
+import com.cgvsu.render_engine.Light;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
@@ -26,8 +27,7 @@ public class TriangleRasterization {
             int width,
             int height,
             boolean useLighting,
-            Vector3f lightPosition, // Позиция источника света в мировых координатах
-            Color lightColor,
+            List<Light> lights, // Передаем список источников света
             Model model
     ) {
         Vector2f v1 = triangle.get(0);
@@ -66,16 +66,19 @@ public class TriangleRasterization {
                         // Преобразование нормали в мировые координаты
                         Vector3f transformedNormal = Matrix4f.multiply(normalMatrix, normal).normalize();
 
-// Интерполяция позиции вершины в мировых координатах
+                        // Интерполяция позиции вершины в мировых координатах
                         Vector3f vertexPosition = interpolatePosition(x, y, v1, v2, v3, v1_3d, v2_3d, v3_3d);
 
                         // Получаем цвет текстуры или используем цвет по умолчанию
                         Color texColor = getTextureColor(texture, u, v);
-                        Color finalColor = texture == null ? fillColor : texColor;
+                        Color baseColor = texture == null ? fillColor : texColor;
 
-                        // Применяем освещение, если оно включено
+                        // Расчет финального цвета с учетом освещения
+                        Color finalColor;
                         if (useLighting) {
-                            finalColor = calculateLighting(transformedNormal, lightPosition, vertexPosition, finalColor, lightColor);
+                            finalColor = calculateLighting(transformedNormal, vertexPosition, baseColor, lights);
+                        } else {
+                            finalColor = baseColor;
                         }
 
                         // Устанавливаем цвет пикселя
@@ -113,20 +116,34 @@ public class TriangleRasterization {
         return texture.getPixelReader().getColor(x, y);
     }
 
-    private static Color calculateLighting(Vector3f normal, Vector3f lightPosition, Vector3f vertexPosition, Color baseColor, Color lightColor) {
-        // Направление света: от источника света к вершине (в мировых координатах)
-        Vector3f lightDirection = Vector3f.deduct(lightPosition, vertexPosition).normalize();
+    private static Color calculateLighting(Vector3f normal, Vector3f vertexPosition, Color baseColor, List<Light> lights) {
+        Color finalColor = Color.BLACK; // Начальный цвет (черный)
 
-        // Косинус угла между нормалью и направлением света
-        float dot = Math.max(0, normal.dot(lightDirection));
+        for (Light light : lights) {
+            // Направление света: от вершины к источнику света
+            Vector3f lightDirection = Vector3f.deduct(light.getPosition(), vertexPosition).normalize();
 
-        // Итоговый цвет с учётом освещения
-        return new Color(
-                baseColor.getRed() * lightColor.getRed() * dot,
-                baseColor.getGreen() * lightColor.getGreen() * dot,
-                baseColor.getBlue() * lightColor.getBlue() * dot,
-                baseColor.getOpacity()
-        );
+            // Косинус угла между нормалью и направлением света
+            float dot = Math.max(0, normal.dot(lightDirection));
+
+            // Вклад текущего источника света
+            Color lightContribution = new Color(
+                    baseColor.getRed() * light.getColor().getRed() * dot,
+                    baseColor.getGreen() * light.getColor().getGreen() * dot,
+                    baseColor.getBlue() * light.getColor().getBlue() * dot,
+                    baseColor.getOpacity()
+            );
+
+            // Суммируем вклад всех источников света
+            finalColor = new Color(
+                    Math.min(finalColor.getRed() + lightContribution.getRed(), 1.0),
+                    Math.min(finalColor.getGreen() + lightContribution.getGreen(), 1.0),
+                    Math.min(finalColor.getBlue() + lightContribution.getBlue(), 1.0),
+                    baseColor.getOpacity()
+            );
+        }
+
+        return finalColor;
     }
 
     private static boolean isPointInTriangle(int x, int y, Vector2f v1, Vector2f v2, Vector2f v3) {

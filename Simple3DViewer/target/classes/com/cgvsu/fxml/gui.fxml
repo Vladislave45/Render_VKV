@@ -276,6 +276,18 @@
             <!-- Настройки света -->
             <TitledPane text="Light Settings">
                 <VBox spacing="10" alignment="CENTER" layoutX="10" layoutY="10">
+                    <!-- Выбор активного источника света -->
+                    <HBox spacing="10">
+                        <Label text="Active Light:"/>
+                        <ComboBox fx:id="lightComboBox" onAction="#handleLightSelection"/>
+                    </HBox>
+
+                    <!-- Кнопки для управления источниками света -->
+                    <HBox spacing="10">
+                        <Button text="Add Light" onAction="#handleAddLight"/>
+                        <Button text="Remove Light" onAction="#handleRemoveLight"/>
+                    </HBox>
+
                     <!-- Цвет света -->
                     <HBox spacing="10">
                         <Label text="Light Color:"/>

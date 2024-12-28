@@ -8,10 +8,7 @@ import com.cgvsu.model.Model;
 import com.cgvsu.model.Polygon;
 import com.cgvsu.objreader.ObjReader;
 import com.cgvsu.objwriter.ObjWriter;
-import com.cgvsu.render_engine.Camera;
-import com.cgvsu.render_engine.CameraManager;
-import com.cgvsu.render_engine.GraphicConveyor;
-import com.cgvsu.render_engine.RenderEngine;
+import com.cgvsu.render_engine.*;
 import com.cgvsu.utils.Triangulation;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
@@ -85,7 +82,6 @@ public class GuiController {
     private boolean isMousePressed = false;
     /////////
 
-    @FXML
     private void render() {
         double width = canvas.getWidth();
         double height = canvas.getHeight();
@@ -115,8 +111,7 @@ public class GuiController {
                         fillColor,
                         drawWireframeCheckBox.isSelected(),
                         useLightingCheckBox.isSelected(),
-                        lightPosition,
-                        lightColor
+                        lights // Передаем список источников света
                 );
             }
         } else {
@@ -126,6 +121,11 @@ public class GuiController {
 
     @FXML
     private void initialize() {
+        // Инициализация источников света
+        lights.add(new Light(new Vector3f(0, 0, 100), Color.WHITE)); // Добавляем начальный источник света
+        updateLightComboBox(); // Обновляем ComboBox
+
+        // Остальная инициализация
         canvas.setFocusTraversable(true);
         canvas.requestFocus();
 
@@ -176,8 +176,6 @@ public class GuiController {
         translateXField.setText("0.0");
         translateYField.setText("0.0");
         translateZField.setText("0.0");
-        modelColorPicker.setValue(Color.BLACK);
-        backgroundColorPicker.setValue(Color.WHITE);
 
         anchorPane.prefWidthProperty().addListener((ov, oldValue, newValue) -> canvas.setWidth(newValue.doubleValue()));
         anchorPane.prefHeightProperty().addListener((ov, oldValue, newValue) -> canvas.setHeight(newValue.doubleValue()));
@@ -228,8 +226,7 @@ public class GuiController {
                             texture == null ? Color.LIGHTGRAY : texColor,
                             drawWireframeCheckBox.isSelected(),
                             useLightingCheckBox.isSelected(),
-                            lightPosition,
-                            lightColor
+                            lights // Передаем список источников света
                     );
                 }
             } else {
@@ -1093,9 +1090,59 @@ public class GuiController {
     private Vector3f lightPosition = new Vector3f(0, 0, 100);
     private Color lightColor = Color.WHITE;
 
+    private List<Light> lights = new ArrayList<>();
+    private int activeLightIndex = 0;
+
+    @FXML
+    private ComboBox<String> lightComboBox;
+
+    private void updateLightComboBox() {
+        lightComboBox.getItems().clear();
+        for (int i = 0; i < lights.size(); i++) {
+            lightComboBox.getItems().add("Light " + (i + 1));
+        }
+        lightComboBox.getSelectionModel().select(activeLightIndex);
+    }
+
+    @FXML
+    private void handleLightSelection(ActionEvent event) {
+        activeLightIndex = lightComboBox.getSelectionModel().getSelectedIndex();
+        updateLightFields();
+    }
+
+    // Обновление полей с данными активного источника света
+    private void updateLightFields() {
+        Light activeLight = lights.get(activeLightIndex);
+        lightColorPicker.setValue(activeLight.getColor());
+        lightPositionXField.setText(String.valueOf(activeLight.getPosition().getX()));
+        lightPositionYField.setText(String.valueOf(activeLight.getPosition().getY()));
+        lightPositionZField.setText(String.valueOf(activeLight.getPosition().getZ()));
+    }
+
+    @FXML
+    private void handleAddLight(ActionEvent event) {
+        lights.add(new Light(new Vector3f(0, 0, 100), Color.WHITE));
+        activeLightIndex = lights.size() - 1;
+        updateLightComboBox();
+        updateLightFields();
+    }
+
+    @FXML
+    private void handleRemoveLight(ActionEvent event) {
+        if (lights.size() > 1) {
+            lights.remove(activeLightIndex);
+            activeLightIndex = Math.max(0, activeLightIndex - 1);
+            updateLightComboBox();
+            updateLightFields();
+        } else {
+            System.out.println("Cannot remove the last light.");
+        }
+    }
+
     @FXML
     private void handleLightColorChange(ActionEvent event) {
-        lightColor = lightColorPicker.getValue();
+        Light activeLight = lights.get(activeLightIndex);
+        activeLight.setColor(lightColorPicker.getValue());
         render();
     }
 
@@ -1106,7 +1153,8 @@ public class GuiController {
             float posY = Float.parseFloat(lightPositionYField.getText());
             float posZ = Float.parseFloat(lightPositionZField.getText());
 
-            lightPosition = new Vector3f(posX, posY, posZ); // Позиция света в мировых координатах
+            Light activeLight = lights.get(activeLightIndex);
+            activeLight.setPosition(new Vector3f(posX, posY, posZ));
             render();
         } catch (NumberFormatException e) {
             System.out.println("Ошибка: введите корректные числа для позиции света.");

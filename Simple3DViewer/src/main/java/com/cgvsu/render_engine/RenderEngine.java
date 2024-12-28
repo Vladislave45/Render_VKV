@@ -35,8 +35,7 @@ public class RenderEngine {
             Color fillColor,
             final boolean isWireframeEnabled,
             final boolean useLighting,
-            final Vector3f lightPosition,
-            final Color lightColor
+            final List<Light> lights // Принимаем список источников света
     ) {
         graphicsContext.setStroke(modelColor);
         graphicsContext.setFill(backgroundColor);
@@ -52,7 +51,7 @@ public class RenderEngine {
         Matrix4f modelViewProjectionMatrix = Matrix4f.multiply(projectionMatrix, Matrix4f.multiply(viewMatrix, modelMatrix));
 
         if (isRasterizationEnabled) {
-            renderWithRasterization(graphicsContext, camera, mesh, width, height, modelViewProjectionMatrix, texture, fillColor, useLighting, lightPosition, lightColor);
+            renderWithRasterization(graphicsContext, camera, mesh, width, height, modelViewProjectionMatrix, texture, fillColor, useLighting, lights);
         }
 
         if (isWireframeEnabled) {
@@ -73,8 +72,7 @@ public class RenderEngine {
             Image texture,
             Color fillColor,
             boolean useLighting,
-            Vector3f lightPosition,
-            Color lightColor
+            List<Light> lights // Принимаем список источников света
     ) {
         List<List<Float>> zBuffer = ZBuffer.createZBuffer(width, height);
         List<Vector3f> vertexNormals = NormalUtils.recalculateVertexNormals(mesh);
@@ -126,8 +124,7 @@ public class RenderEngine {
                         width,
                         height,
                         useLighting,
-                        lightPosition,
-                        lightColor,
+                        lights, // Передаем список источников света
                         mesh // Передаем объект Model
                 );
             }
